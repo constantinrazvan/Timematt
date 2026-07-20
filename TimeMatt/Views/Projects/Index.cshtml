@@ -1,0 +1,56 @@
+@model List<ProjectListItemViewModel>
+@{
+    ViewData["Title"] = "Projects";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h1 class="h3 fw-bold mb-1">Projects</h1>
+        <p class="text-muted-fh mb-0">@Model.Count projects across all clients.</p>
+    </div>
+    <button class="btn btn-primary rounded-3 px-3" type="button">
+        <i class="bi bi-plus-lg me-1"></i> New Project
+    </button>
+</div>
+
+<div class="row g-3">
+    @foreach (var p in Model)
+    {
+        <div class="col-md-6 col-xl-4">
+            <a asp-controller="Projects" asp-action="Details" asp-route-id="@p.Id" class="text-decoration-none text-reset">
+                <div class="fh-card h-100 p-3">
+                    <div class="d-flex align-items-start justify-content-between mb-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <span style="width: 10px; height: 10px; border-radius: 50%; background-color: @p.Color; display: inline-block;"></span>
+                            <span class="fw-semibold">@p.Name</span>
+                        </div>
+                        <span class="fh-badge @p.Status.CssClass()">@p.Status.Label()</span>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <span class="text-muted-fh small">@p.ClientName</span>
+                        <span class="fh-badge @p.PaymentType.CssClass()">@p.PaymentType.Label()</span>
+                    </div>
+
+                    <div class="fh-progress mb-1">
+                        <div class="fh-progress-bar" style="width: @(p.Progress)%;"></div>
+                    </div>
+                    <div class="d-flex justify-content-between text-muted-fh mb-3" style="font-size: 0.78rem;">
+                        <span>@p.Progress% complete</span>
+                        <span>@p.HoursWorked.Hours()h logged</span>
+                    </div>
+
+                    <div class="d-flex align-items-center justify-content-between pt-2 border-top" style="border-color: var(--fh-border) !important;">
+                        <div>
+                            <div class="text-muted-fh" style="font-size: 0.72rem;">@(p.PaymentType == PaymentType.Fixed ? "Fixed Budget" : "Rate")</div>
+                            <div class="fw-semibold small">@(p.PaymentType == PaymentType.Fixed ? p.Budget.Money() : p.HourlyRate.Money() + "/hr")</div>
+                        </div>
+                        <div class="text-end">
+                            <div class="text-muted-fh" style="font-size: 0.72rem;">Deadline</div>
+                            <div class="fw-semibold small">@p.Deadline.ToString("MMM d, yyyy")</div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    }
+</div>

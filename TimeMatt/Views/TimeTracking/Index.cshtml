@@ -1,0 +1,168 @@
+@model TimeTrackingViewModel
+@{
+    ViewData["Title"] = "Time Tracking";
+}
+
+<div class="mb-4">
+    <h1 class="h3 fw-bold mb-1">Time Tracking</h1>
+    <p class="text-muted-fh mb-0">Track your time in real time and review your recent sessions.</p>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-12 col-lg-5">
+        <div class="fh-card h-100 p-4 text-center d-flex flex-column justify-content-center">
+            <div class="mb-3">
+                <select class="form-select rounded-3 mx-auto" style="max-width: 320px;" id="timerProject">
+                    @foreach (var p in Model.ActiveProjects)
+                    {
+                        <option value="@p.Id">@p.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="fh-timer-display mb-2" id="timerDisplay">00:00:00</div>
+            <div class="mb-3 text-muted-fh small" id="timerStatus">
+                <span class="fh-timer-dot me-1" id="timerDot" style="display:none;"></span>
+                <span id="timerStatusText">Timer stopped</span>
+            </div>
+            <div class="d-flex justify-content-center gap-2">
+                <button class="btn btn-primary rounded-3 px-4" id="btnStart" type="button"><i class="bi bi-play-fill me-1"></i> Start</button>
+                <button class="btn btn-outline-secondary rounded-3 px-4" id="btnPause" type="button" disabled><i class="bi bi-pause-fill me-1"></i> Pause</button>
+                <button class="btn btn-outline-danger rounded-3 px-4" id="btnStop" type="button" disabled><i class="bi bi-stop-fill me-1"></i> Stop</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-7">
+        <div class="fh-card h-100">
+            <div class="fh-card-header">
+                <h2 class="fh-section-title">Today's Sessions</h2>
+                <span class="fw-semibold">@Model.HoursToday.Hours()h total</span>
+            </div>
+            <div class="fh-card-body">
+                @if (Model.TodaySessions.Count == 0)
+                {
+                    <p class="text-muted-fh mb-0 small">No sessions logged today yet.</p>
+                }
+                <div class="d-flex flex-column gap-3">
+                    @foreach (var s in Model.TodaySessions)
+                    {
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-2">
+                                <span style="width: 8px; height: 8px; border-radius: 50%; background-color: @s.Color; display: inline-block;"></span>
+                                <div>
+                                    <div class="fw-semibold small">@s.ProjectName</div>
+                                    <div class="text-muted-fh" style="font-size: 0.78rem;">@s.Description</div>
+                                </div>
+                            </div>
+                            <span class="fw-semibold small">@s.Hours.Hours()h</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="fh-stat-grid">
+    <div class="fh-stat-card">
+        <div class="text-muted-fh small">Hours Today</div>
+        <div class="fh-stat-value">@Model.HoursToday.Hours()h</div>
+    </div>
+    <div class="fh-stat-card">
+        <div class="text-muted-fh small">Weekly Summary</div>
+        <div class="fh-stat-value">@Model.HoursThisWeek.Hours()h</div>
+    </div>
+    <div class="fh-stat-card">
+        <div class="text-muted-fh small">Monthly Summary</div>
+        <div class="fh-stat-value">@Model.HoursThisMonth.Hours()h</div>
+    </div>
+</div>
+
+<div class="fh-card mt-3">
+    <div class="fh-card-header">
+        <h2 class="fh-section-title">Hours This Week</h2>
+    </div>
+    <div class="fh-card-body">
+        <canvas id="weekSummaryChart" height="90"></canvas>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script>
+        new Chart(document.getElementById('weekSummaryChart'), {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.WeekDayLabels)),
+                datasets: [{
+                    label: 'Hours',
+                    data: @Html.Raw(Json.Serialize(Model.WeekDayHours)),
+                    backgroundColor: '#22c55e',
+                    borderRadius: 6,
+                    maxBarThickness: 36
+                }]
+            },
+            options: {
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(120,120,130,0.12)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        (function () {
+            var seconds = 0;
+            var interval = null;
+            var display = document.getElementById('timerDisplay');
+            var dot = document.getElementById('timerDot');
+            var statusText = document.getElementById('timerStatusText');
+            var btnStart = document.getElementById('btnStart');
+            var btnPause = document.getElementById('btnPause');
+            var btnStop = document.getElementById('btnStop');
+
+            function format(s) {
+                var h = Math.floor(s / 3600).toString().padStart(2, '0');
+                var m = Math.floor((s % 3600) / 60).toString().padStart(2, '0');
+                var sec = Math.floor(s % 60).toString().padStart(2, '0');
+                return h + ':' + m + ':' + sec;
+            }
+
+            function tick() {
+                seconds++;
+                display.textContent = format(seconds);
+            }
+
+            btnStart.addEventListener('click', function () {
+                if (interval) return;
+                interval = setInterval(tick, 1000);
+                dot.style.display = 'inline-block';
+                statusText.textContent = 'Timer running';
+                btnStart.disabled = true;
+                btnPause.disabled = false;
+                btnStop.disabled = false;
+            });
+
+            btnPause.addEventListener('click', function () {
+                clearInterval(interval);
+                interval = null;
+                dot.style.display = 'none';
+                statusText.textContent = 'Timer paused';
+                btnStart.disabled = false;
+                btnPause.disabled = true;
+            });
+
+            btnStop.addEventListener('click', function () {
+                clearInterval(interval);
+                interval = null;
+                seconds = 0;
+                display.textContent = format(seconds);
+                dot.style.display = 'none';
+                statusText.textContent = 'Timer stopped';
+                btnStart.disabled = false;
+                btnPause.disabled = true;
+                btnStop.disabled = true;
+            });
+        })();
+    </script>
+}

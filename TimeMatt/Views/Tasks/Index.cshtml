@@ -1,0 +1,86 @@
+@model TaskBoardViewModel
+@{
+    ViewData["Title"] = "Tasks";
+
+    string PriorityIcon(TaskPriority priority) => priority switch
+    {
+        TaskPriority.Urgent => "bi-exclamation-circle-fill",
+        TaskPriority.High => "bi-arrow-up-circle-fill",
+        TaskPriority.Medium => "bi-dash-circle-fill",
+        _ => "bi-arrow-down-circle-fill"
+    };
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h1 class="h3 fw-bold mb-1">Tasks</h1>
+        <p class="text-muted-fh mb-0">Drag cards between columns to update their status.</p>
+    </div>
+    <button class="btn btn-primary rounded-3 px-3" type="button">
+        <i class="bi bi-plus-lg me-1"></i> New Task
+    </button>
+</div>
+
+<div class="fh-kanban">
+    @{
+        var columns = new (string Key, string Title, List<TaskCardViewModel> Items)[]
+        {
+            ("todo", "Todo", Model.Todo),
+            ("inprogress", "In Progress", Model.InProgress),
+            ("review", "Review", Model.Review),
+            ("done", "Done", Model.Done)
+        };
+    }
+
+    @foreach (var col in columns)
+    {
+        <div class="fh-kanban-column">
+            <div class="fh-kanban-column-header">
+                <span>@col.Title</span>
+                <span class="fh-kanban-count">@col.Items.Count</span>
+            </div>
+            <div class="fh-kanban-list" id="col-@col.Key" data-column="@col.Key">
+                @foreach (var t in col.Items)
+                {
+                    <div class="fh-task-card" data-task-id="@t.Id">
+                        <div class="d-flex align-items-start justify-content-between mb-2">
+                            <span class="fw-semibold small">@t.Title</span>
+                            <span class="fh-badge @t.Priority.CssClass()"><i class="bi @PriorityIcon(t.Priority)" style="font-size: 0.65rem;"></i> @t.Priority</span>
+                        </div>
+                        <div class="text-muted-fh mb-2" style="font-size: 0.78rem;">@t.ProjectName &middot; @t.ClientName</div>
+                        <div class="fh-progress mb-2">
+                            @{
+                                var pct = t.EstimatedHours > 0 ? Math.Min(100, (int)(t.WorkedHours / t.EstimatedHours * 100)) : 0;
+                            }
+                            <div class="fh-progress-bar" style="width: @(pct)%;"></div>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between text-muted-fh" style="font-size: 0.75rem;">
+                            <span><i class="bi bi-clock me-1"></i>@t.WorkedHours.Hours()/@t.EstimatedHours.Hours()h</span>
+                            <span><i class="bi bi-calendar-event me-1"></i>@t.Deadline.ToString("MMM d")</span>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+    <script>
+        document.querySelectorAll('.fh-kanban-list').forEach(function (list) {
+            new Sortable(list, {
+                group: 'fh-tasks',
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                dragClass: 'sortable-drag',
+                onAdd: function () {
+                    document.querySelectorAll('.fh-kanban-list').forEach(function (col) {
+                        var countEl = col.closest('.fh-kanban-column').querySelector('.fh-kanban-count');
+                        countEl.textContent = col.children.length;
+                    });
+                }
+            });
+        });
+    </script>
+}

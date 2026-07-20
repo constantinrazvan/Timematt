@@ -1,0 +1,152 @@
+@model ReportsViewModel
+@{
+    ViewData["Title"] = "Reports";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h1 class="h3 fw-bold mb-1">Reports</h1>
+        <p class="text-muted-fh mb-0">An overview of your hours and revenue across projects.</p>
+    </div>
+</div>
+
+<div class="fh-stat-grid mb-4">
+    <div class="fh-stat-card">
+        <div class="text-muted-fh small">Total Hours This Month</div>
+        <div class="fh-stat-value">@Model.TotalHoursThisMonth.Hours()h</div>
+    </div>
+    <div class="fh-stat-card">
+        <div class="text-muted-fh small">Total Revenue This Month</div>
+        <div class="fh-stat-value">@Model.TotalRevenueThisMonth.Money()</div>
+    </div>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-12 col-lg-6">
+        <div class="fh-card h-100">
+            <div class="fh-card-header">
+                <h2 class="fh-section-title">Hours per Project</h2>
+            </div>
+            <div class="fh-card-body">
+                <canvas id="hoursPerProjectChart" height="130"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-6">
+        <div class="fh-card h-100">
+            <div class="fh-card-header">
+                <h2 class="fh-section-title">Revenue per Project</h2>
+            </div>
+            <div class="fh-card-body">
+                <canvas id="revenuePerProjectChart" height="130"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-12 col-lg-6">
+        <div class="fh-card h-100">
+            <div class="fh-card-header">
+                <h2 class="fh-section-title">Hours This Week</h2>
+            </div>
+            <div class="fh-card-body">
+                <canvas id="hoursThisWeekChart" height="130"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-6">
+        <div class="fh-card h-100">
+            <div class="fh-card-header">
+                <h2 class="fh-section-title">Hours This Month</h2>
+            </div>
+            <div class="fh-card-body">
+                <canvas id="hoursThisMonthChart" height="130"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <script>
+        const fhTextColor = getComputedStyle(document.documentElement).getPropertyValue('--fh-text-muted').trim();
+        Chart.defaults.font.family = "Inter, sans-serif";
+        Chart.defaults.color = fhTextColor || '#6b7280';
+        const gridColor = 'rgba(120,120,130,0.12)';
+
+        new Chart(document.getElementById('hoursPerProjectChart'), {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.ProjectLabels)),
+                datasets: [{
+                    label: 'Hours',
+                    data: @Html.Raw(Json.Serialize(Model.HoursPerProject)),
+                    backgroundColor: '#6366f1',
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                plugins: { legend: { display: false } },
+                scales: { x: { beginAtZero: true, grid: { color: gridColor } }, y: { grid: { display: false } } }
+            }
+        });
+
+        new Chart(document.getElementById('revenuePerProjectChart'), {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.ProjectLabels)),
+                datasets: [{
+                    label: 'Revenue',
+                    data: @Html.Raw(Json.Serialize(Model.RevenuePerProject)),
+                    backgroundColor: '#22c55e',
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                plugins: { legend: { display: false } },
+                scales: { x: { beginAtZero: true, grid: { color: gridColor } }, y: { grid: { display: false } } }
+            }
+        });
+
+        new Chart(document.getElementById('hoursThisWeekChart'), {
+            type: 'line',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.WeekDayLabels)),
+                datasets: [{
+                    label: 'Hours',
+                    data: @Html.Raw(Json.Serialize(Model.HoursThisWeek)),
+                    borderColor: '#0ea5e9',
+                    backgroundColor: 'rgba(14,165,233,0.15)',
+                    fill: true,
+                    tension: 0.35,
+                    pointRadius: 3
+                }]
+            },
+            options: {
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, grid: { color: gridColor } }, x: { grid: { display: false } } }
+            }
+        });
+
+        new Chart(document.getElementById('hoursThisMonthChart'), {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.MonthWeekLabels)),
+                datasets: [{
+                    label: 'Hours',
+                    data: @Html.Raw(Json.Serialize(Model.HoursThisMonth)),
+                    backgroundColor: '#f59e0b',
+                    borderRadius: 6,
+                    maxBarThickness: 48
+                }]
+            },
+            options: {
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, grid: { color: gridColor } }, x: { grid: { display: false } } }
+            }
+        });
+    </script>
+}

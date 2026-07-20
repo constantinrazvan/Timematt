@@ -1,0 +1,103 @@
+@model ClientDetailsViewModel
+@{
+    ViewData["Title"] = Model.Client.Name;
+}
+
+<a asp-controller="Clients" asp-action="Index" class="text-muted-fh small mb-3 d-inline-block">
+    <i class="bi bi-arrow-left me-1"></i> Back to Clients
+</a>
+
+<div class="row g-3">
+    <div class="col-12 col-lg-4">
+        <div class="fh-card p-4 text-center">
+            <span class="fh-avatar fh-avatar-lg mx-auto mb-3">@Model.Client.Avatar</span>
+            <h2 class="h5 fw-bold mb-0">@Model.Client.Name</h2>
+            <div class="text-muted-fh mb-3">@Model.Client.Company</div>
+
+            <div class="text-start d-flex flex-column gap-2 mt-3">
+                <div class="d-flex align-items-center gap-2 small">
+                    <i class="bi bi-envelope text-muted-fh"></i> @Model.Client.Email
+                </div>
+                <div class="d-flex align-items-center gap-2 small">
+                    <i class="bi bi-telephone text-muted-fh"></i> @Model.Client.Phone
+                </div>
+                <div class="d-flex align-items-center gap-2 small">
+                    <i class="bi bi-geo-alt text-muted-fh"></i> @Model.Client.Address
+                </div>
+                <div class="d-flex align-items-center gap-2 small">
+                    <i class="bi bi-calendar-check text-muted-fh"></i> Client since @Model.Client.ClientSince.ToString("MMMM yyyy")
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 mt-1">
+            <div class="col-6">
+                <div class="fh-stat-card text-center">
+                    <div class="text-muted-fh small">Total Hours</div>
+                    <div class="h5 fw-bold mb-0">@Model.TotalWorkedHours.Hours()h</div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="fh-stat-card text-center">
+                    <div class="text-muted-fh small">Total Revenue</div>
+                    <div class="h5 fw-bold mb-0 text-truncate">@Model.TotalRevenue.Money()</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-8">
+        <div class="fh-card mb-3">
+            <div class="fh-card-header">
+                <h2 class="fh-section-title">Projects</h2>
+            </div>
+            <div class="fh-card-body">
+                <div class="d-flex flex-column gap-3">
+                    @foreach (var p in Model.Projects)
+                    {
+                        <a asp-controller="Projects" asp-action="Details" asp-route-id="@p.Id" class="text-decoration-none text-reset">
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <span class="fw-semibold small">@p.Name</span>
+                                <span class="fh-badge @p.Status.CssClass()">@p.Status.Label()</span>
+                            </div>
+                            <div class="fh-progress mb-1">
+                                <div class="fh-progress-bar" style="width: @(p.Progress)%;"></div>
+                            </div>
+                            <div class="text-muted-fh" style="font-size: 0.78rem;">@p.HoursWorked.Hours()h worked &middot; Deadline @p.Deadline.ToString("MMM d, yyyy")</div>
+                        </a>
+                        @if (p != Model.Projects.Last())
+                        {
+                            <hr class="my-1" />
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="fh-card">
+            <div class="fh-card-header">
+                <h2 class="fh-section-title">Recent Activity</h2>
+            </div>
+            <div class="fh-card-body">
+                @if (Model.RecentActivity.Count == 0)
+                {
+                    <p class="text-muted-fh mb-0 small">No recent activity yet.</p>
+                }
+                <div class="d-flex flex-column gap-3">
+                    @foreach (var item in Model.RecentActivity)
+                    {
+                        <div class="d-flex gap-3">
+                            <div class="fh-activity-icon" style="background: rgba(99,102,241,0.12); color: var(--bs-@item.IconColor);">
+                                <i class="bi @item.Icon"></i>
+                            </div>
+                            <div>
+                                <div class="small">@item.Text</div>
+                                <div class="text-muted-fh" style="font-size: 0.75rem;">@item.Timestamp.ToString("MMM d, h:mm tt")</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,51 @@
+@model List<ClientListItemViewModel>
+@{
+    ViewData["Title"] = "Clients";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h1 class="h3 fw-bold mb-1">Clients</h1>
+        <p class="text-muted-fh mb-0">@Model.Count clients across all your active work.</p>
+    </div>
+    <button class="btn btn-primary rounded-3 px-3" type="button">
+        <i class="bi bi-plus-lg me-1"></i> New Client
+    </button>
+</div>
+
+<div class="fh-card">
+    <div class="table-responsive">
+        <table class="table fh-table mb-0 align-middle">
+            <thead>
+                <tr>
+                    <th style="padding-left: 1.25rem;">Client</th>
+                    <th>Company</th>
+                    <th>Email</th>
+                    <th>Active Projects</th>
+                    <th>Total Worked Hours</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var client in Model)
+                {
+                    <tr class="fh-table-row-link" onclick="window.location='@Url.Action("Details", new { id = client.Id })'">
+                        <td style="padding-left: 1.25rem;">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="fh-avatar">@client.Avatar</span>
+                                <span class="fw-semibold">@client.Name</span>
+                            </div>
+                        </td>
+                        <td>@client.Company</td>
+                        <td class="text-muted-fh">@client.Email</td>
+                        <td>@client.ActiveProjects</td>
+                        <td>@client.TotalWorkedHours.Hours()h</td>
+                        <td class="text-end" style="padding-right: 1.25rem;">
+                            <i class="bi bi-chevron-right text-muted-fh"></i>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
