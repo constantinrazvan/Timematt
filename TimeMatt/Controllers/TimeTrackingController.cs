@@ -18,7 +18,7 @@ public class TimeTrackingController : Controller
 
     public IActionResult Index()
     {
-        var weeklyHours = _timeTrackingService.GetHoursByDayThisWeek();
+        var weeklyHours = _timeTrackingService.GetHoursForLastSevenDays();
 
         var vm = new TimeTrackingViewModel
         {
@@ -39,8 +39,8 @@ public class TimeTrackingController : Controller
             HoursToday = _timeTrackingService.GetHoursToday(),
             HoursThisWeek = _timeTrackingService.GetHoursThisWeek(),
             HoursThisMonth = _timeTrackingService.GetHoursThisMonth(),
-            WeekDayLabels = weeklyHours.Keys.Select(d => d.ToString().Substring(0, 3)).ToList(),
-            WeekDayHours = weeklyHours.Values.ToList()
+            WeekDayLabels = weeklyHours.Select(d => d.Label).ToList(),
+            WeekDayHours = weeklyHours.Select(d => d.Hours).ToList()
         };
 
         return View(vm);

@@ -27,6 +27,7 @@ public class TimeTrackingService
             new() { Id = 11, ProjectId = 5, Description = "Payment gateway testing", Date = today.AddDays(-4), Hours = 4.5, Billable = true },
             new() { Id = 12, ProjectId = 2, Description = "Dashboard layout", Date = today.AddDays(-5), Hours = 3, Billable = true },
             new() { Id = 13, ProjectId = 1, Description = "SEO audit", Date = today.AddDays(-5), Hours = 2, Billable = true },
+            new() { Id = 19, ProjectId = 4, Description = "Onboarding screens review", Date = today.AddDays(-6), Hours = 2.5, Billable = false },
 
             // Earlier this month
             new() { Id = 14, ProjectId = 3, Description = "Final portfolio delivery", Date = today.AddDays(-12), Hours = 4, Billable = true },
@@ -43,7 +44,7 @@ public class TimeTrackingService
 
     public List<TimeEntry> GetThisWeek()
     {
-        var start = StartOfWeek(DateTime.Today);
+        var start = DateTime.Today.AddDays(-6);
         return _entries.Where(e => e.Date.Date >= start && e.Date.Date <= DateTime.Today).ToList();
     }
 
@@ -59,24 +60,18 @@ public class TimeTrackingService
 
     public double GetHoursThisMonth() => GetThisMonth().Sum(e => e.Hours);
 
-    public Dictionary<DayOfWeek, double> GetHoursByDayThisWeek()
+    public List<(string Label, double Hours)> GetHoursForLastSevenDays()
     {
-        var start = StartOfWeek(DateTime.Today);
-        var result = new Dictionary<DayOfWeek, double>();
-        for (var i = 0; i < 7; i++)
+        var result = new List<(string Label, double Hours)>();
+        for (var i = 6; i >= 0; i--)
         {
-            var day = start.AddDays(i);
-            result[day.DayOfWeek] = _entries.Where(e => e.Date.Date == day).Sum(e => e.Hours);
+            var day = DateTime.Today.AddDays(-i);
+            var hours = _entries.Where(e => e.Date.Date == day).Sum(e => e.Hours);
+            result.Add((day.ToString("ddd"), hours));
         }
         return result;
     }
 
     public Dictionary<int, double> GetHoursByProject() =>
         _entries.GroupBy(e => e.ProjectId).ToDictionary(g => g.Key, g => g.Sum(e => e.Hours));
-
-    private static DateTime StartOfWeek(DateTime date)
-    {
-        var diff = (7 + (int)date.DayOfWeek - (int)DayOfWeek.Monday) % 7;
-        return date.AddDays(-diff).Date;
-    }
 }

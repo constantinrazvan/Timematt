@@ -21,7 +21,6 @@
 /Users/razvanconstantin/Desktop/Timematt/TimeMatt/obj/Debug/net10.0/scopedcss/Views/Shared/_Layout.cshtml.rz.scp.css
 /Users/razvanconstantin/Desktop/Timematt/TimeMatt/obj/Debug/net10.0/scopedcss/bundle/TimeMatt.styles.css
 /Users/razvanconstantin/Desktop/Timematt/TimeMatt/obj/Debug/net10.0/scopedcss/projectbundle/TimeMatt.bundle.scp.css
-/Users/razvanconstantin/Desktop/Timematt/TimeMatt/obj/Debug/net10.0/compressed/e4bfbkix4u-{0}-pr2quq2aw0-pr2quq2aw0.gz
 /Users/razvanconstantin/Desktop/Timematt/TimeMatt/obj/Debug/net10.0/compressed/jg55vuem25-{0}-61n19gt1b8-61n19gt1b8.gz
 /Users/razvanconstantin/Desktop/Timematt/TimeMatt/obj/Debug/net10.0/compressed/0z50x9gztk-{0}-0kcqy4tt2w-0kcqy4tt2w.gz
 /Users/razvanconstantin/Desktop/Timematt/TimeMatt/obj/Debug/net10.0/compressed/4d1zl6vhpq-{0}-bqjiyaj88i-bqjiyaj88i.gz
@@ -95,3 +94,5 @@
 /Users/razvanconstantin/Desktop/Timematt/TimeMatt/obj/Debug/net10.0/TimeMatt.pdb
 /Users/razvanconstantin/Desktop/Timematt/TimeMatt/obj/Debug/net10.0/TimeMatt.genruntimeconfig.cache
 /Users/razvanconstantin/Desktop/Timematt/TimeMatt/obj/Debug/net10.0/ref/TimeMatt.dll
+/Users/razvanconstantin/Desktop/Timematt/TimeMatt/obj/Debug/net10.0/TimeMatt.sourcelink.json
+/Users/razvanconstantin/Desktop/Timematt/TimeMatt/obj/Debug/net10.0/compressed/e4bfbkix4u-{0}-nsagzk4zyv-nsagzk4zyv.gz

@@ -9,60 +9,192 @@
         TaskPriority.Medium => "bi-dash-circle-fill",
         _ => "bi-arrow-down-circle-fill"
     };
+
+    var allTasks = Model.Todo.Concat(Model.InProgress).Concat(Model.Review).Concat(Model.Done).ToList();
 }
 
-<div class="d-flex align-items-center justify-content-between mb-4">
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
     <div>
         <h1 class="h3 fw-bold mb-1">Tasks</h1>
         <p class="text-muted-fh mb-0">Drag cards between columns to update their status.</p>
     </div>
-    <button class="btn btn-primary rounded-3 px-3" type="button">
-        <i class="bi bi-plus-lg me-1"></i> New Task
-    </button>
+    <div class="d-flex gap-2">
+        <div class="dropdown">
+            <button class="btn btn-outline-secondary rounded-3 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="viewSwitcher">
+                <i class="bi bi-kanban me-1"></i> <span id="viewSwitcherLabel">Kanban</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="#" data-view="kanban"><i class="bi bi-kanban me-2"></i>Kanban</a></li>
+                <li><a class="dropdown-item" href="#" data-view="list"><i class="bi bi-list-ul me-2"></i>List</a></li>
+                <li><a class="dropdown-item" href="#" data-view="grid"><i class="bi bi-grid-3x3-gap me-2"></i>Grid</a></li>
+            </ul>
+        </div>
+        <button class="btn btn-primary rounded-3 px-3" type="button" data-bs-toggle="modal" data-bs-target="#newTaskModal">
+            <i class="bi bi-plus-lg me-1"></i> New Task
+        </button>
+    </div>
 </div>
 
-<div class="fh-kanban">
-    @{
-        var columns = new (string Key, string Title, List<TaskCardViewModel> Items)[]
-        {
-            ("todo", "Todo", Model.Todo),
-            ("inprogress", "In Progress", Model.InProgress),
-            ("review", "Review", Model.Review),
-            ("done", "Done", Model.Done)
-        };
-    }
+<div id="kanbanView">
+    <div class="fh-kanban">
+        @{
+            var columns = new (string Key, string Title, List<TaskCardViewModel> Items)[]
+            {
+                ("todo", "Todo", Model.Todo),
+                ("inprogress", "In Progress", Model.InProgress),
+                ("review", "Review", Model.Review),
+                ("done", "Done", Model.Done)
+            };
+        }
 
-    @foreach (var col in columns)
-    {
-        <div class="fh-kanban-column">
-            <div class="fh-kanban-column-header">
-                <span>@col.Title</span>
-                <span class="fh-kanban-count">@col.Items.Count</span>
+        @foreach (var col in columns)
+        {
+            <div class="fh-kanban-column">
+                <div class="fh-kanban-column-header">
+                    <span>@col.Title</span>
+                    <span class="fh-kanban-count">@col.Items.Count</span>
+                </div>
+                <div class="fh-kanban-list" id="col-@col.Key" data-column="@col.Key">
+                    @foreach (var t in col.Items)
+                    {
+                        <div class="fh-task-card" data-task-id="@t.Id">
+                            <div class="d-flex align-items-start justify-content-between mb-2">
+                                <span class="fw-semibold small">@t.Title</span>
+                                <span class="fh-badge @t.Priority.CssClass()"><i class="bi @PriorityIcon(t.Priority)" style="font-size: 0.65rem;"></i> @t.Priority</span>
+                            </div>
+                            <div class="text-muted-fh mb-2" style="font-size: 0.78rem;">@t.ProjectName &middot; @t.ClientName</div>
+                            <div class="fh-progress mb-2">
+                                @{
+                                    var pct = t.EstimatedHours > 0 ? Math.Min(100, (int)(t.WorkedHours / t.EstimatedHours * 100)) : 0;
+                                }
+                                <div class="fh-progress-bar" style="width: @(pct)%;"></div>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between text-muted-fh" style="font-size: 0.75rem;">
+                                <span><i class="bi bi-clock me-1"></i>@t.WorkedHours.Hours()/@t.EstimatedHours.Hours()h</span>
+                                <span><i class="bi bi-calendar-event me-1"></i>@t.Deadline.ToString("MMM d")</span>
+                            </div>
+                        </div>
+                    }
+                </div>
             </div>
-            <div class="fh-kanban-list" id="col-@col.Key" data-column="@col.Key">
-                @foreach (var t in col.Items)
-                {
-                    <div class="fh-task-card" data-task-id="@t.Id">
-                        <div class="d-flex align-items-start justify-content-between mb-2">
-                            <span class="fw-semibold small">@t.Title</span>
-                            <span class="fh-badge @t.Priority.CssClass()"><i class="bi @PriorityIcon(t.Priority)" style="font-size: 0.65rem;"></i> @t.Priority</span>
-                        </div>
-                        <div class="text-muted-fh mb-2" style="font-size: 0.78rem;">@t.ProjectName &middot; @t.ClientName</div>
-                        <div class="fh-progress mb-2">
-                            @{
-                                var pct = t.EstimatedHours > 0 ? Math.Min(100, (int)(t.WorkedHours / t.EstimatedHours * 100)) : 0;
+        }
+    </div>
+</div>
+
+<div id="listView" class="d-none">
+    <div class="fh-card">
+        <div class="table-responsive">
+            <table class="table fh-table mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th style="padding-left: 1.25rem;">Title</th>
+                        <th>Project</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Hours</th>
+                        <th>Deadline</th>
+                    </tr>
+                </thead>
+                <tbody id="listViewBody">
+                    @foreach (var t in allTasks)
+                    {
+                        <tr>
+                            <td style="padding-left: 1.25rem;" class="fw-semibold">@t.Title</td>
+                            <td class="text-muted-fh">@t.ProjectName &middot; @t.ClientName</td>
+                            <td><span class="fh-badge fh-badge-review">@t.Column.ColumnLabel()</span></td>
+                            <td><span class="fh-badge @t.Priority.CssClass()">@t.Priority</span></td>
+                            <td>@t.WorkedHours.Hours()/@t.EstimatedHours.Hours()h</td>
+                            <td>@t.Deadline.ToString("MMM d, yyyy")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="gridView" class="d-none">
+    <div class="row g-3" id="gridViewContainer">
+        @foreach (var t in allTasks)
+        {
+            <div class="col-sm-6 col-xl-3">
+                <div class="fh-card h-100 p-3">
+                    <div class="d-flex align-items-start justify-content-between mb-2">
+                        <span class="fw-semibold small">@t.Title</span>
+                        <span class="fh-badge @t.Priority.CssClass()">@t.Priority</span>
+                    </div>
+                    <div class="text-muted-fh mb-2" style="font-size: 0.78rem;">@t.ProjectName &middot; @t.ClientName</div>
+                    <span class="fh-badge fh-badge-review mb-2">@t.Column.ColumnLabel()</span>
+                    <div class="d-flex align-items-center justify-content-between text-muted-fh mt-2" style="font-size: 0.75rem;">
+                        <span><i class="bi bi-clock me-1"></i>@t.WorkedHours.Hours()/@t.EstimatedHours.Hours()h</span>
+                        <span><i class="bi bi-calendar-event me-1"></i>@t.Deadline.ToString("MMM d")</span>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="modal fade" id="newTaskModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4">
+            <form id="newTaskForm">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">New Task</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body d-flex flex-column gap-3">
+                    <div>
+                        <label class="form-label small fw-semibold">Title</label>
+                        <input type="text" class="form-control rounded-3" id="taskTitle" required />
+                    </div>
+                    <div>
+                        <label class="form-label small fw-semibold">Project</label>
+                        <select class="form-select rounded-3" id="taskProject" required>
+                            @foreach (var p in Model.AllProjects)
+                            {
+                                <option value="@p.Id" data-project-name="@p.Name" data-client-name="@p.ClientName">@p.Name (@p.ClientName)</option>
                             }
-                            <div class="fh-progress-bar" style="width: @(pct)%;"></div>
+                        </select>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Column</label>
+                            <select class="form-select rounded-3" id="taskColumn">
+                                <option value="todo">Todo</option>
+                                <option value="inprogress">In Progress</option>
+                                <option value="review">Review</option>
+                                <option value="done">Done</option>
+                            </select>
                         </div>
-                        <div class="d-flex align-items-center justify-content-between text-muted-fh" style="font-size: 0.75rem;">
-                            <span><i class="bi bi-clock me-1"></i>@t.WorkedHours.Hours()/@t.EstimatedHours.Hours()h</span>
-                            <span><i class="bi bi-calendar-event me-1"></i>@t.Deadline.ToString("MMM d")</span>
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Priority</label>
+                            <select class="form-select rounded-3" id="taskPriority">
+                                <option value="Low">Low</option>
+                                <option value="Medium" selected>Medium</option>
+                                <option value="High">High</option>
+                                <option value="Urgent">Urgent</option>
+                            </select>
                         </div>
                     </div>
-                }
-            </div>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Estimated Hours</label>
+                            <input type="number" class="form-control rounded-3" id="taskEstimatedHours" min="0" step="0.5" value="8" required />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Deadline</label>
+                            <input type="date" class="form-control rounded-3" id="taskDeadline" required />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary rounded-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-3">Add Task</button>
+                </div>
+            </form>
         </div>
-    }
+    </div>
 </div>
 
 @section Scripts {
@@ -81,6 +213,98 @@
                     });
                 }
             });
+        });
+
+        const views = { kanban: document.getElementById('kanbanView'), list: document.getElementById('listView'), grid: document.getElementById('gridView') };
+        const viewIcons = { kanban: 'bi-kanban', list: 'bi-list-ul', grid: 'bi-grid-3x3-gap' };
+        const viewLabels = { kanban: 'Kanban', list: 'List', grid: 'Grid' };
+        const viewSwitcher = document.getElementById('viewSwitcher');
+        const viewSwitcherLabel = document.getElementById('viewSwitcherLabel');
+
+        document.querySelectorAll('[data-view]').forEach(function (link) {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+                const view = this.getAttribute('data-view');
+                Object.keys(views).forEach(function (key) {
+                    views[key].classList.toggle('d-none', key !== view);
+                });
+                viewSwitcherLabel.textContent = viewLabels[view];
+                viewSwitcher.querySelector('i').className = 'bi ' + viewIcons[view] + ' me-1';
+            });
+        });
+
+        const priorityIconMap = { Low: 'bi-arrow-down-circle-fill', Medium: 'bi-dash-circle-fill', High: 'bi-arrow-up-circle-fill', Urgent: 'bi-exclamation-circle-fill' };
+        const priorityClassMap = { Low: 'fh-badge-low', Medium: 'fh-badge-medium', High: 'fh-badge-high', Urgent: 'fh-badge-urgent' };
+        const columnLabelMap = { todo: 'Todo', inprogress: 'In Progress', review: 'Review', done: 'Done' };
+
+        document.getElementById('newTaskForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const title = document.getElementById('taskTitle').value.trim();
+            const projectSelect = document.getElementById('taskProject');
+            const projectOption = projectSelect.options[projectSelect.selectedIndex];
+            const projectName = projectOption.getAttribute('data-project-name');
+            const clientName = projectOption.getAttribute('data-client-name');
+            const column = document.getElementById('taskColumn').value;
+            const priority = document.getElementById('taskPriority').value;
+            const estimatedHours = parseFloat(document.getElementById('taskEstimatedHours').value) || 0;
+            const deadlineRaw = document.getElementById('taskDeadline').value;
+            if (!title || !deadlineRaw) return;
+
+            const deadline = new Date(deadlineRaw + 'T00:00:00');
+            const deadlineShort = deadline.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            const deadlineLong = deadline.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+            const kanbanCard = document.createElement('div');
+            kanbanCard.className = 'fh-task-card';
+            kanbanCard.innerHTML = `
+                <div class="d-flex align-items-start justify-content-between mb-2">
+                    <span class="fw-semibold small">${title}</span>
+                    <span class="fh-badge ${priorityClassMap[priority]}"><i class="bi ${priorityIconMap[priority]}" style="font-size: 0.65rem;"></i> ${priority}</span>
+                </div>
+                <div class="text-muted-fh mb-2" style="font-size: 0.78rem;">${projectName} &middot; ${clientName}</div>
+                <div class="fh-progress mb-2"><div class="fh-progress-bar" style="width: 0%;"></div></div>
+                <div class="d-flex align-items-center justify-content-between text-muted-fh" style="font-size: 0.75rem;">
+                    <span><i class="bi bi-clock me-1"></i>0/${estimatedHours}h</span>
+                    <span><i class="bi bi-calendar-event me-1"></i>${deadlineShort}</span>
+                </div>
+            `;
+            const targetList = document.getElementById('col-' + column);
+            targetList.appendChild(kanbanCard);
+            targetList.closest('.fh-kanban-column').querySelector('.fh-kanban-count').textContent = targetList.children.length;
+
+            const listRow = document.createElement('tr');
+            listRow.innerHTML = `
+                <td style="padding-left: 1.25rem;" class="fw-semibold">${title}</td>
+                <td class="text-muted-fh">${projectName} &middot; ${clientName}</td>
+                <td><span class="fh-badge fh-badge-review">${columnLabelMap[column]}</span></td>
+                <td><span class="fh-badge ${priorityClassMap[priority]}">${priority}</span></td>
+                <td>0/${estimatedHours}h</td>
+                <td>${deadlineLong}</td>
+            `;
+            document.getElementById('listViewBody').appendChild(listRow);
+
+            const gridCol = document.createElement('div');
+            gridCol.className = 'col-sm-6 col-xl-3';
+            gridCol.innerHTML = `
+                <div class="fh-card h-100 p-3">
+                    <div class="d-flex align-items-start justify-content-between mb-2">
+                        <span class="fw-semibold small">${title}</span>
+                        <span class="fh-badge ${priorityClassMap[priority]}">${priority}</span>
+                    </div>
+                    <div class="text-muted-fh mb-2" style="font-size: 0.78rem;">${projectName} &middot; ${clientName}</div>
+                    <span class="fh-badge fh-badge-review mb-2">${columnLabelMap[column]}</span>
+                    <div class="d-flex align-items-center justify-content-between text-muted-fh mt-2" style="font-size: 0.75rem;">
+                        <span><i class="bi bi-clock me-1"></i>0/${estimatedHours}h</span>
+                        <span><i class="bi bi-calendar-event me-1"></i>${deadlineShort}</span>
+                    </div>
+                </div>
+            `;
+            document.getElementById('gridViewContainer').appendChild(gridCol);
+
+            this.reset();
+            document.getElementById('taskEstimatedHours').value = 8;
+            bootstrap.Modal.getInstance(document.getElementById('newTaskModal')).hide();
         });
     </script>
 }

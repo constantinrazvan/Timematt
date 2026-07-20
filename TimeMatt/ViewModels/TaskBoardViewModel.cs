@@ -22,4 +22,13 @@ public class TaskBoardViewModel
     public List<TaskCardViewModel> InProgress { get; set; } = new();
     public List<TaskCardViewModel> Review { get; set; } = new();
     public List<TaskCardViewModel> Done { get; set; } = new();
+    public List<ProjectOptionViewModel> AllProjects { get; set; } = new();
+}
+
+public class ProjectOptionViewModel
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string ClientName { get; set; } = string.Empty;
+    public string Color { get; set; } = "#6366f1";
 }

@@ -6,8 +6,6 @@ public class DashboardViewModel
 {
     public int ActiveProjects { get; set; }
     public int TotalClients { get; set; }
-    public double HoursToday { get; set; }
-    public double HoursThisWeek { get; set; }
     public decimal EstimatedRevenue { get; set; }
     public int PendingTasks { get; set; }
 

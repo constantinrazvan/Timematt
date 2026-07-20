@@ -33,4 +33,22 @@ public class TaskService
     public List<ProjectTask> GetByProjectId(int projectId) => _tasks.Where(t => t.ProjectId == projectId).ToList();
 
     public List<ProjectTask> GetPending() => _tasks.Where(t => t.Column != TaskColumn.Done).ToList();
+
+    public int GetProgressForProject(int projectId, int fallbackPercent)
+    {
+        var tasks = GetByProjectId(projectId);
+        if (tasks.Count == 0)
+        {
+            return fallbackPercent;
+        }
+
+        var estimated = tasks.Sum(t => t.EstimatedHours);
+        if (estimated <= 0)
+        {
+            return fallbackPercent;
+        }
+
+        var worked = tasks.Sum(t => t.WorkedHours);
+        return (int)Math.Round(Math.Min(100, worked / estimated * 100));
+    }
 }

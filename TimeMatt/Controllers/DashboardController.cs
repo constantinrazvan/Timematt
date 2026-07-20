@@ -22,13 +22,11 @@ public class DashboardController : Controller
         {
             ActiveProjects = _dashboardService.GetActiveProjectsCount(),
             TotalClients = _dashboardService.GetTotalClientsCount(),
-            HoursToday = _dashboardService.GetHoursToday(),
-            HoursThisWeek = _dashboardService.GetHoursThisWeek(),
             EstimatedRevenue = _dashboardService.GetEstimatedRevenue(),
             PendingTasks = _dashboardService.GetPendingTasksCount(),
 
-            WeekDayLabels = weeklyHours.Keys.Select(d => d.ToString().Substring(0, 3)).ToList(),
-            WeekDayHours = weeklyHours.Values.ToList(),
+            WeekDayLabels = weeklyHours.Select(d => d.Label).ToList(),
+            WeekDayHours = weeklyHours.Select(d => d.Hours).ToList(),
 
             RevenueProjectLabels = revenueByProject.Select(r => r.Project.Name).ToList(),
             RevenueProjectValues = revenueByProject.Select(r => r.Revenue).ToList(),

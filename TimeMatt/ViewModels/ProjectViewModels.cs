@@ -25,4 +25,6 @@ public class ProjectDetailsViewModel
     public List<ProjectFile> Files { get; set; } = new();
     public List<ProjectComment> Comments { get; set; } = new();
     public decimal RevenueToDate { get; set; }
+    public int DisplayProgress { get; set; }
+    public List<Client> AllClients { get; set; } = new();
 }

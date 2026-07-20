@@ -44,7 +44,14 @@ public class TasksController : Controller
             Todo = cards.Where(c => c.Column == TaskColumn.Todo).ToList(),
             InProgress = cards.Where(c => c.Column == TaskColumn.InProgress).ToList(),
             Review = cards.Where(c => c.Column == TaskColumn.Review).ToList(),
-            Done = cards.Where(c => c.Column == TaskColumn.Done).ToList()
+            Done = cards.Where(c => c.Column == TaskColumn.Done).ToList(),
+            AllProjects = _projectService.GetAll().Select(p => new ProjectOptionViewModel
+            {
+                Id = p.Id,
+                Name = p.Name,
+                ClientName = _clientService.GetById(p.ClientId)?.Company ?? "",
+                Color = p.Color
+            }).ToList()
         };
 
         return View(vm);

@@ -29,20 +29,6 @@
         </div>
     </div>
     <div class="fh-stat-card fh-stat-card-flex">
-        <div class="fh-stat-icon" style="background: rgba(34,197,94,0.12); color: #16a34a;"><i class="bi bi-clock-fill"></i></div>
-        <div class="fh-stat-body">
-            <div class="text-muted-fh small">Hours Today</div>
-            <div class="fh-stat-value">@Model.HoursToday.Hours()h</div>
-        </div>
-    </div>
-    <div class="fh-stat-card fh-stat-card-flex">
-        <div class="fh-stat-icon" style="background: rgba(245,158,11,0.12); color: #b45309;"><i class="bi bi-calendar-week-fill"></i></div>
-        <div class="fh-stat-body">
-            <div class="text-muted-fh small">Hours This Week</div>
-            <div class="fh-stat-value">@Model.HoursThisWeek.Hours()h</div>
-        </div>
-    </div>
-    <div class="fh-stat-card fh-stat-card-flex">
         <div class="fh-stat-icon" style="background: rgba(168,85,247,0.12); color: #9333ea;"><i class="bi bi-cash-stack"></i></div>
         <div class="fh-stat-body">
             <div class="text-muted-fh small">Est. Revenue</div>
@@ -62,10 +48,13 @@
     <div class="col-12 col-lg-7">
         <div class="fh-card h-100">
             <div class="fh-card-header">
-                <h2 class="fh-section-title">Hours Worked This Week</h2>
+                <h2 class="fh-section-title">Hours Worked (Last 7 Days)</h2>
+                <span class="fh-kanban-count">@Model.WeekDayHours.Sum().Hours()h total</span>
             </div>
             <div class="fh-card-body">
-                <canvas id="weeklyHoursChart" height="110"></canvas>
+                <div style="height: 260px;">
+                    <canvas id="weeklyHoursChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -75,7 +64,25 @@
                 <h2 class="fh-section-title">Revenue by Project</h2>
             </div>
             <div class="fh-card-body">
-                <canvas id="revenueByProjectChart" height="110"></canvas>
+                <div class="position-relative mx-auto" style="height: 220px; width: 220px;">
+                    <canvas id="revenueByProjectChart"></canvas>
+                    <div class="position-absolute top-50 start-50 translate-middle text-center" style="pointer-events: none;">
+                        <div class="text-muted-fh" style="font-size: 0.72rem;">Total</div>
+                        <div class="fw-bold" style="font-size: 1.1rem;">@Model.RevenueProjectValues.Sum().Money()</div>
+                    </div>
+                </div>
+                <div class="d-flex flex-wrap justify-content-center gap-3 mt-3">
+                    @{
+                        var revenueColors = new[] { "#6366f1", "#22c55e", "#0ea5e9", "#f59e0b", "#a855f7", "#ec4899" };
+                    }
+                    @for (var i = 0; i < Model.RevenueProjectLabels.Count; i++)
+                    {
+                        <div class="d-flex align-items-center gap-2">
+                            <span style="width: 10px; height: 10px; border-radius: 50%; background-color: @revenueColors[i % revenueColors.Length]; display: inline-block;"></span>
+                            <span class="small text-muted-fh">@Model.RevenueProjectLabels[i]</span>
+                        </div>
+                    }
+                </div>
             </div>
         </div>
     </div>
@@ -166,22 +173,31 @@
         Chart.defaults.font.family = "Inter, sans-serif";
         Chart.defaults.color = fhTextColor || '#6b7280';
 
-        new Chart(document.getElementById('weeklyHoursChart'), {
+        const weeklyHoursCtx = document.getElementById('weeklyHoursChart').getContext('2d');
+        const barGradient = weeklyHoursCtx.createLinearGradient(0, 0, 0, 240);
+        barGradient.addColorStop(0, '#818cf8');
+        barGradient.addColorStop(1, '#6366f1');
+
+        new Chart(weeklyHoursCtx, {
             type: 'bar',
             data: {
                 labels: @Html.Raw(Json.Serialize(Model.WeekDayLabels)),
                 datasets: [{
                     label: 'Hours',
                     data: @Html.Raw(Json.Serialize(Model.WeekDayHours)),
-                    backgroundColor: '#6366f1',
-                    borderRadius: 6,
-                    maxBarThickness: 36
+                    backgroundColor: barGradient,
+                    borderRadius: 8,
+                    maxBarThickness: 42
                 }]
             },
             options: {
-                plugins: { legend: { display: false } },
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { callbacks: { label: (ctx) => ctx.parsed.y.toFixed(1) + ' hours' } }
+                },
                 scales: {
-                    y: { beginAtZero: true, grid: { color: 'rgba(120,120,130,0.12)' } },
+                    y: { beginAtZero: true, grace: '15%', grid: { color: 'rgba(120,120,130,0.12)' }, ticks: { precision: 0 } },
                     x: { grid: { display: false } }
                 }
             }
@@ -194,12 +210,26 @@
                 datasets: [{
                     data: @Html.Raw(Json.Serialize(Model.RevenueProjectValues)),
                     backgroundColor: ['#6366f1', '#22c55e', '#0ea5e9', '#f59e0b', '#a855f7', '#ec4899'],
-                    borderWidth: 0
+                    borderWidth: 3,
+                    borderColor: getComputedStyle(document.documentElement).getPropertyValue('--fh-surface').trim()
                 }]
             },
             options: {
-                plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 14 } } },
-                cutout: '65%'
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => {
+                                const value = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(ctx.parsed);
+                                const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                                const pct = total > 0 ? Math.round((ctx.parsed / total) * 100) : 0;
+                                return ` ${ctx.label}: ${value} (${pct}%)`;
+                            }
+                        }
+                    }
+                },
+                cutout: '72%'
             }
         });
     </script>

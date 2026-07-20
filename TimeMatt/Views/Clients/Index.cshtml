@@ -8,14 +8,14 @@
         <h1 class="h3 fw-bold mb-1">Clients</h1>
         <p class="text-muted-fh mb-0">@Model.Count clients across all your active work.</p>
     </div>
-    <button class="btn btn-primary rounded-3 px-3" type="button">
+    <button class="btn btn-primary rounded-3 px-3" type="button" data-bs-toggle="modal" data-bs-target="#newClientModal">
         <i class="bi bi-plus-lg me-1"></i> New Client
     </button>
 </div>
 
 <div class="fh-card">
     <div class="table-responsive">
-        <table class="table fh-table mb-0 align-middle">
+        <table class="table fh-table mb-0 align-middle" id="clientsTable">
             <thead>
                 <tr>
                     <th style="padding-left: 1.25rem;">Client</th>
@@ -49,3 +49,68 @@
         </table>
     </div>
 </div>
+
+<div class="modal fade" id="newClientModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4">
+            <form id="newClientForm">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">New Client</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body d-flex flex-column gap-3">
+                    <div>
+                        <label class="form-label small fw-semibold">Name</label>
+                        <input type="text" class="form-control rounded-3" id="clientName" required />
+                    </div>
+                    <div>
+                        <label class="form-label small fw-semibold">Company</label>
+                        <input type="text" class="form-control rounded-3" id="clientCompany" required />
+                    </div>
+                    <div>
+                        <label class="form-label small fw-semibold">Email</label>
+                        <input type="email" class="form-control rounded-3" id="clientEmail" required />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary rounded-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-3">Add Client</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('newClientForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const name = document.getElementById('clientName').value.trim();
+            const company = document.getElementById('clientCompany').value.trim();
+            const email = document.getElementById('clientEmail').value.trim();
+            if (!name || !company || !email) return;
+
+            const initials = name.split(' ').map(function (p) { return p[0]; }).join('').substring(0, 2).toUpperCase();
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td style="padding-left: 1.25rem;">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="fh-avatar">${initials}</span>
+                        <span class="fw-semibold">${name}</span>
+                    </div>
+                </td>
+                <td>${company}</td>
+                <td class="text-muted-fh">${email}</td>
+                <td>0</td>
+                <td>0h</td>
+                <td class="text-end" style="padding-right: 1.25rem;"><i class="bi bi-chevron-right text-muted-fh"></i></td>
+            `;
+            document.querySelector('#clientsTable tbody').prepend(row);
+
+            this.reset();
+            bootstrap.Modal.getInstance(document.getElementById('newClientModal')).hide();
+        });
+    </script>
+}

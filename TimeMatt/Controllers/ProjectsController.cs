@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using TimeMatt.Models;
 using TimeMatt.Services;
 using TimeMatt.ViewModels;
 
@@ -19,6 +20,8 @@ public class ProjectsController : Controller
 
     public IActionResult Index()
     {
+        ViewBag.Clients = _clientService.GetAll();
+
         var items = _projectService.GetAll().Select(p => new ProjectListItemViewModel
         {
             Id = p.Id,
@@ -28,7 +31,7 @@ public class ProjectsController : Controller
             PaymentType = p.PaymentType,
             Budget = p.Budget,
             HourlyRate = p.HourlyRate,
-            Progress = p.Progress,
+            Progress = _taskService.GetProgressForProject(p.Id, p.Progress),
             Deadline = p.Deadline,
             HoursWorked = p.HoursWorked,
             Color = p.Color
@@ -51,14 +54,22 @@ public class ProjectsController : Controller
             return NotFound();
         }
 
+        var tasks = _taskService.GetByProjectId(id);
+        var displayProgress = _taskService.GetProgressForProject(id, project.Progress);
+        var revenueToDate = project.PaymentType == PaymentType.Fixed
+            ? Math.Round(project.Budget * displayProgress / 100m, 0)
+            : project.RevenueToDate;
+
         var vm = new ProjectDetailsViewModel
         {
             Project = project,
             Client = client,
-            Tasks = _taskService.GetByProjectId(id),
+            Tasks = tasks,
             Files = _projectService.GetFilesByProjectId(id),
             Comments = _projectService.GetCommentsByProjectId(id),
-            RevenueToDate = project.RevenueToDate
+            RevenueToDate = revenueToDate,
+            DisplayProgress = displayProgress,
+            AllClients = _clientService.GetAll()
         };
 
         return View(vm);

@@ -24,7 +24,7 @@ public class ReportsController : Controller
             .OrderByDescending(p => hoursByProject[p.Id])
             .ToList();
 
-        var weeklyHours = _timeTrackingService.GetHoursByDayThisWeek();
+        var weeklyHours = _timeTrackingService.GetHoursForLastSevenDays();
         var monthEntries = _timeTrackingService.GetThisMonth();
 
         var weekGroups = monthEntries
@@ -39,8 +39,8 @@ public class ReportsController : Controller
             HoursPerProject = projects.Select(p => hoursByProject[p.Id]).ToList(),
             RevenuePerProject = projects.Select(p => p.RevenueToDate).ToList(),
 
-            WeekDayLabels = weeklyHours.Keys.Select(d => d.ToString().Substring(0, 3)).ToList(),
-            HoursThisWeek = weeklyHours.Values.ToList(),
+            WeekDayLabels = weeklyHours.Select(d => d.Label).ToList(),
+            HoursThisWeek = weeklyHours.Select(d => d.Hours).ToList(),
 
             MonthWeekLabels = weekGroups.Select(w => w.Label).ToList(),
             HoursThisMonth = weekGroups.Select(w => w.Hours).ToList(),

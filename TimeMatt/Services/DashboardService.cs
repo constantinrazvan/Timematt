@@ -34,10 +34,6 @@ public class DashboardService
 
     public int GetTotalClientsCount() => _clientService.GetAll().Count;
 
-    public double GetHoursToday() => _timeTrackingService.GetHoursToday();
-
-    public double GetHoursThisWeek() => _timeTrackingService.GetHoursThisWeek();
-
     public decimal GetEstimatedRevenue() =>
         _projectService.GetAll()
             .Where(p => p.Status != ProjectStatus.Archived)
@@ -45,7 +41,7 @@ public class DashboardService
 
     public int GetPendingTasksCount() => _taskService.GetPending().Count;
 
-    public Dictionary<DayOfWeek, double> GetWeeklyHoursChartData() => _timeTrackingService.GetHoursByDayThisWeek();
+    public List<(string Label, double Hours)> GetWeeklyHoursChartData() => _timeTrackingService.GetHoursForLastSevenDays();
 
     public List<(Project Project, decimal Revenue)> GetRevenueByProject() =>
         _projectService.GetAll()

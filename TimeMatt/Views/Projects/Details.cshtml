@@ -12,14 +12,19 @@
     <div>
         <div class="d-flex align-items-center gap-2 mb-1">
             <span style="width: 10px; height: 10px; border-radius: 50%; background-color: @p.Color; display: inline-block;"></span>
-            <h1 class="h3 fw-bold mb-0">@p.Name</h1>
-            <span class="fh-badge @p.Status.CssClass()">@p.Status.Label()</span>
-            <span class="fh-badge @p.PaymentType.CssClass()">@p.PaymentType.Label()</span>
+            <h1 class="h3 fw-bold mb-0" id="projectTitleText">@p.Name</h1>
+            <span class="fh-badge @p.Status.CssClass()" id="projectStatusBadge">@p.Status.Label()</span>
+            <span class="fh-badge @p.PaymentType.CssClass()" id="projectPaymentBadge">@p.PaymentType.Label()</span>
         </div>
-        <p class="text-muted-fh mb-0">@Model.Client.Company &middot; @Model.Client.Name</p>
+        <p class="text-muted-fh mb-0" id="projectClientText">@Model.Client.Company &middot; @Model.Client.Name</p>
     </div>
     <div class="d-flex gap-2">
-        <button class="btn btn-outline-secondary rounded-3" type="button"><i class="bi bi-pencil me-1"></i> Edit</button>
+        <button class="btn btn-outline-secondary rounded-3" type="button" data-bs-toggle="modal" data-bs-target="#editProjectModal"
+                data-name="@p.Name" data-status="@p.Status" data-payment-type="@p.PaymentType"
+                data-budget="@p.Budget" data-rate="@p.HourlyRate" data-client-id="@Model.Client.Id"
+                data-deadline="@p.Deadline.ToString("yyyy-MM-dd")">
+            <i class="bi bi-pencil me-1"></i> Edit
+        </button>
         <a asp-controller="TimeTracking" asp-action="Index" class="btn btn-primary rounded-3"><i class="bi bi-stopwatch-fill me-1"></i> Log Time</a>
     </div>
 </div>
@@ -27,8 +32,8 @@
 <div class="row g-3 mb-4">
     <div class="col-6 col-lg-3">
         <div class="fh-stat-card">
-            <div class="text-muted-fh small">@(p.PaymentType == PaymentType.Fixed ? "Fixed Budget" : "Hourly Rate")</div>
-            <div class="h5 fw-bold mb-0 text-truncate">@(p.PaymentType == PaymentType.Fixed ? p.Budget.Money() : p.HourlyRate.Money() + "/hr")</div>
+            <div class="text-muted-fh small" id="projectAmountLabel">@(p.PaymentType == PaymentType.Fixed ? "Fixed Budget" : "Hourly Rate")</div>
+            <div class="h5 fw-bold mb-0 text-truncate" id="projectAmountValue">@(p.PaymentType == PaymentType.Fixed ? p.Budget.Money() : p.HourlyRate.Money() + "/hr")</div>
         </div>
     </div>
     <div class="col-6 col-lg-3">
@@ -46,7 +51,7 @@
     <div class="col-6 col-lg-3">
         <div class="fh-stat-card">
             <div class="text-muted-fh small">Deadline</div>
-            <div class="h5 fw-bold mb-0">@p.Deadline.ToString("MMM d, yyyy")</div>
+            <div class="h5 fw-bold mb-0" id="projectDeadlineValue">@p.Deadline.ToString("MMM d, yyyy")</div>
         </div>
     </div>
 </div>
@@ -75,19 +80,19 @@
             <h3 class="fh-section-title mb-3 mt-4">Statistics</h3>
             <div class="row g-3">
                 <div class="col-md-4">
-                    <div class="text-muted-fh small mb-1">Progress</div>
+                    <div class="text-muted-fh small mb-1">Progress <span class="fst-italic">(from tasks)</span></div>
                     <div class="fh-progress mb-1">
-                        <div class="fh-progress-bar" style="width: @(p.Progress)%;"></div>
+                        <div class="fh-progress-bar" id="projectProgressBar" style="width: @(Model.DisplayProgress)%;"></div>
                     </div>
-                    <div class="small">@p.Progress% complete</div>
+                    <div class="small" id="projectProgressText">@Model.DisplayProgress% complete</div>
                 </div>
                 <div class="col-md-4">
                     <div class="text-muted-fh small mb-1">Start Date</div>
                     <div class="fw-semibold small">@p.StartDate.ToString("MMM d, yyyy")</div>
                 </div>
                 <div class="col-md-4">
-                    <div class="text-muted-fh small mb-1">@(p.PaymentType == PaymentType.Fixed ? "Fixed Budget" : "Hourly Rate")</div>
-                    <div class="fw-semibold small">@(p.PaymentType == PaymentType.Fixed ? p.Budget.Money() : p.HourlyRate.Money() + "/hr")</div>
+                    <div class="text-muted-fh small mb-1" id="projectAmountLabelOverview">@(p.PaymentType == PaymentType.Fixed ? "Fixed Budget" : "Hourly Rate")</div>
+                    <div class="fw-semibold small" id="projectAmountValueOverview">@(p.PaymentType == PaymentType.Fixed ? p.Budget.Money() : p.HourlyRate.Money() + "/hr")</div>
                 </div>
             </div>
         </div>
@@ -158,3 +163,132 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="editProjectModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content rounded-4">
+            <form id="editProjectForm">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Edit Project</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body d-flex flex-column gap-3">
+                    <div>
+                        <label class="form-label small fw-semibold">Project Name</label>
+                        <input type="text" class="form-control rounded-3" id="editProjectName" required />
+                    </div>
+                    <div>
+                        <label class="form-label small fw-semibold">Client</label>
+                        <select class="form-select rounded-3" id="editProjectClient" required>
+                            @foreach (var c in Model.AllClients)
+                            {
+                                <option value="@c.Id" data-company="@c.Company" data-contact="@c.Name">@c.Company (@c.Name)</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Status</label>
+                            <select class="form-select rounded-3" id="editProjectStatus">
+                                <option value="Draft">Draft</option>
+                                <option value="Active">Active</option>
+                                <option value="OnHold">On Hold</option>
+                                <option value="Review">Review</option>
+                                <option value="Completed">Completed</option>
+                                <option value="Archived">Archived</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Payment Type</label>
+                            <select class="form-select rounded-3" id="editProjectPaymentType">
+                                <option value="Fixed">Fixed Price</option>
+                                <option value="Hourly">Hourly</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold" id="editProjectAmountLabel">Hourly Rate ($)</label>
+                            <input type="number" class="form-control rounded-3" id="editProjectAmount" min="0" required />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Deadline</label>
+                            <input type="date" class="form-control rounded-3" id="editProjectDeadline" required />
+                        </div>
+                    </div>
+                    <div class="text-muted-fh small">
+                        <i class="bi bi-info-circle me-1"></i>Progress is calculated automatically from task hours and isn't editable here.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary rounded-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-3">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const editModalEl = document.getElementById('editProjectModal');
+        const editAmountLabel = document.getElementById('editProjectAmountLabel');
+        const editPaymentType = document.getElementById('editProjectPaymentType');
+        const editClientSelect = document.getElementById('editProjectClient');
+
+        function syncAmountLabel() {
+            editAmountLabel.textContent = editPaymentType.value === 'Fixed' ? 'Fixed Budget ($)' : 'Hourly Rate ($)';
+        }
+        editPaymentType.addEventListener('change', syncAmountLabel);
+
+        editModalEl.addEventListener('show.bs.modal', function (event) {
+            const btn = event.relatedTarget;
+            document.getElementById('editProjectName').value = btn.getAttribute('data-name');
+            document.getElementById('editProjectStatus').value = btn.getAttribute('data-status');
+            editPaymentType.value = btn.getAttribute('data-payment-type');
+            editClientSelect.value = btn.getAttribute('data-client-id');
+            document.getElementById('editProjectDeadline').value = btn.getAttribute('data-deadline');
+
+            const paymentType = btn.getAttribute('data-payment-type');
+            document.getElementById('editProjectAmount').value = paymentType === 'Fixed' ? btn.getAttribute('data-budget') : btn.getAttribute('data-rate');
+            syncAmountLabel();
+        });
+
+        const statusClassMap = { Draft: 'fh-badge-draft', Active: 'fh-badge-active', OnHold: 'fh-badge-onhold', Review: 'fh-badge-review', Completed: 'fh-badge-completed', Archived: 'fh-badge-archived' };
+        const statusLabelMap = { Draft: 'Draft', Active: 'Active', OnHold: 'On Hold', Review: 'Review', Completed: 'Completed', Archived: 'Archived' };
+
+        document.getElementById('editProjectForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const name = document.getElementById('editProjectName').value.trim();
+            const status = document.getElementById('editProjectStatus').value;
+            const paymentType = editPaymentType.value;
+            const amount = parseFloat(document.getElementById('editProjectAmount').value) || 0;
+            const deadlineRaw = document.getElementById('editProjectDeadline').value;
+            const clientOption = editClientSelect.options[editClientSelect.selectedIndex];
+            if (!name || !deadlineRaw) return;
+
+            const deadline = new Date(deadlineRaw + 'T00:00:00');
+            const deadlineLabel = deadline.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            const amountLabel = paymentType === 'Fixed' ? 'Fixed Budget' : 'Hourly Rate';
+            const amountValue = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount) + (paymentType === 'Hourly' ? '/hr' : '');
+            const paymentBadgeClass = paymentType === 'Fixed' ? 'fh-badge-fixed' : 'fh-badge-hourly';
+            const paymentBadgeLabel = paymentType === 'Fixed' ? 'Fixed Price' : 'Hourly';
+
+            document.getElementById('projectTitleText').textContent = name;
+            document.getElementById('projectStatusBadge').className = 'fh-badge ' + statusClassMap[status];
+            document.getElementById('projectStatusBadge').textContent = statusLabelMap[status];
+            document.getElementById('projectPaymentBadge').className = 'fh-badge ' + paymentBadgeClass;
+            document.getElementById('projectPaymentBadge').textContent = paymentBadgeLabel;
+            document.getElementById('projectAmountLabel').textContent = amountLabel;
+            document.getElementById('projectAmountValue').textContent = amountValue;
+            document.getElementById('projectAmountLabelOverview').textContent = amountLabel;
+            document.getElementById('projectAmountValueOverview').textContent = amountValue;
+            document.getElementById('projectDeadlineValue').textContent = deadlineLabel;
+            document.getElementById('projectClientText').textContent = clientOption.getAttribute('data-company') + ' · ' + clientOption.getAttribute('data-contact');
+            document.querySelector('[data-bs-target="#editProjectModal"]').setAttribute('data-client-id', clientOption.value);
+
+            bootstrap.Modal.getInstance(editModalEl).hide();
+        });
+    </script>
+}
