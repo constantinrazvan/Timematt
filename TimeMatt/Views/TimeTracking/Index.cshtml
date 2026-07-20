@@ -11,15 +11,23 @@
 <div class="row g-3 mb-4">
     <div class="col-12 col-lg-5">
         <div class="fh-card h-100 p-4 text-center d-flex flex-column justify-content-center">
-            <div class="mb-3">
-                <select class="form-select rounded-3 mx-auto" style="max-width: 320px;" id="timerProject">
-                    @foreach (var p in Model.ActiveProjects)
+            <div class="mb-2 mx-auto" style="max-width: 320px; width: 100%;">
+                <select class="form-select rounded-3 mb-2" id="timerProject">
+                    @foreach (var p in Model.TrackableProjects)
                     {
-                        <option value="@p.Id">@p.Name</option>
+                        <option value="@p.Id" data-color="@p.Color">@p.Name</option>
                     }
                 </select>
+                <select class="form-select rounded-3 mb-2" id="timerTask">
+                    <option value="">No specific task (general work)</option>
+                    @foreach (var t in Model.AllTasks)
+                    {
+                        <option value="@t.Id" data-project-id="@t.ProjectId">@t.Title</option>
+                    }
+                </select>
+                <input type="text" class="form-control rounded-3" id="timerDescription" placeholder="What are you working on?" />
             </div>
-            <div class="fh-timer-display mb-2" id="timerDisplay">00:00:00</div>
+            <div class="fh-timer-display mb-2 mt-2" id="timerDisplay">00:00:00</div>
             <div class="mb-3 text-muted-fh small" id="timerStatus">
                 <span class="fh-timer-dot me-1" id="timerDot" style="display:none;"></span>
                 <span id="timerStatusText">Timer stopped</span>
@@ -36,21 +44,18 @@
         <div class="fh-card h-100">
             <div class="fh-card-header">
                 <h2 class="fh-section-title">Today's Sessions</h2>
-                <span class="fw-semibold">@Model.HoursToday.Hours()h total</span>
+                <span class="fw-semibold" id="hoursTodayTotal">@Model.HoursToday.Hours()h total</span>
             </div>
             <div class="fh-card-body">
-                @if (Model.TodaySessions.Count == 0)
-                {
-                    <p class="text-muted-fh mb-0 small">No sessions logged today yet.</p>
-                }
-                <div class="d-flex flex-column gap-3">
+                <p class="text-muted-fh mb-0 small @(Model.TodaySessions.Count > 0 ? "d-none" : "")" id="noSessionsMessage">No sessions logged today yet.</p>
+                <div class="d-flex flex-column gap-3" id="todaySessionsList">
                     @foreach (var s in Model.TodaySessions)
                     {
                         <div class="d-flex align-items-center justify-content-between">
                             <div class="d-flex align-items-center gap-2">
-                                <span style="width: 8px; height: 8px; border-radius: 50%; background-color: @s.Color; display: inline-block;"></span>
+                                <span style="width: 8px; height: 8px; background-color: @s.Color; display: inline-block;"></span>
                                 <div>
-                                    <div class="fw-semibold small">@s.ProjectName</div>
+                                    <div class="fw-semibold small">@s.ProjectName@(s.TaskTitle is not null ? $" · {s.TaskTitle}" : "")</div>
                                     <div class="text-muted-fh" style="font-size: 0.78rem;">@s.Description</div>
                                 </div>
                             </div>
@@ -66,7 +71,7 @@
 <div class="fh-stat-grid">
     <div class="fh-stat-card">
         <div class="text-muted-fh small">Hours Today</div>
-        <div class="fh-stat-value">@Model.HoursToday.Hours()h</div>
+        <div class="fh-stat-value" id="hoursTodayStat">@Model.HoursToday.Hours()h</div>
     </div>
     <div class="fh-stat-card">
         <div class="text-muted-fh small">Weekly Summary</div>
@@ -120,6 +125,44 @@
             var btnStart = document.getElementById('btnStart');
             var btnPause = document.getElementById('btnPause');
             var btnStop = document.getElementById('btnStop');
+            var projectSelect = document.getElementById('timerProject');
+            var taskSelect = document.getElementById('timerTask');
+            var descriptionInput = document.getElementById('timerDescription');
+
+            function filterTasksForProject() {
+                var projectId = projectSelect.value;
+                var currentValue = taskSelect.value;
+                var matchFound = false;
+
+                Array.prototype.forEach.call(taskSelect.options, function (option) {
+                    if (!option.value) {
+                        option.hidden = false;
+                        return;
+                    }
+                    var belongsToProject = option.getAttribute('data-project-id') === projectId;
+                    option.hidden = !belongsToProject;
+                    if (belongsToProject && option.value === currentValue) {
+                        matchFound = true;
+                    }
+                });
+
+                if (!matchFound) {
+                    taskSelect.value = '';
+                }
+            }
+
+            projectSelect.addEventListener('change', filterTasksForProject);
+
+            var preselectedProjectId = @Html.Raw(ViewBag.PreselectedProjectId != null ? ViewBag.PreselectedProjectId.ToString() : "null");
+            var preselectedTaskId = @Html.Raw(ViewBag.PreselectedTaskId != null ? ViewBag.PreselectedTaskId.ToString() : "null");
+
+            if (preselectedProjectId !== null) {
+                projectSelect.value = preselectedProjectId;
+            }
+            filterTasksForProject();
+            if (preselectedTaskId !== null) {
+                taskSelect.value = preselectedTaskId;
+            }
 
             function format(s) {
                 var h = Math.floor(s / 3600).toString().padStart(2, '0');
@@ -141,6 +184,8 @@
                 btnStart.disabled = true;
                 btnPause.disabled = false;
                 btnStop.disabled = false;
+                projectSelect.disabled = true;
+                taskSelect.disabled = true;
             });
 
             btnPause.addEventListener('click', function () {
@@ -155,6 +200,11 @@
             btnStop.addEventListener('click', function () {
                 clearInterval(interval);
                 interval = null;
+
+                if (seconds > 0) {
+                    logSession(seconds);
+                }
+
                 seconds = 0;
                 display.textContent = format(seconds);
                 dot.style.display = 'none';
@@ -162,7 +212,46 @@
                 btnStart.disabled = false;
                 btnPause.disabled = true;
                 btnStop.disabled = true;
+                projectSelect.disabled = false;
+                taskSelect.disabled = false;
+                descriptionInput.value = '';
             });
+
+            function logSession(elapsedSeconds) {
+                var projectOption = projectSelect.options[projectSelect.selectedIndex];
+                var taskOption = taskSelect.options[taskSelect.selectedIndex];
+                var projectName = projectOption ? projectOption.textContent : '';
+                var taskTitle = taskSelect.value ? taskOption.textContent : null;
+                var color = projectOption ? projectOption.getAttribute('data-color') : '#7a4c8b';
+                var description = descriptionInput.value.trim() || 'Untitled session';
+                var hours = Math.round((elapsedSeconds / 3600) * 100) / 100;
+
+                var noSessionsMessage = document.getElementById('noSessionsMessage');
+                if (noSessionsMessage) {
+                    noSessionsMessage.classList.add('d-none');
+                }
+
+                var row = document.createElement('div');
+                row.className = 'd-flex align-items-center justify-content-between';
+                row.innerHTML = `
+                    <div class="d-flex align-items-center gap-2">
+                        <span style="width: 8px; height: 8px; background-color: ${color}; display: inline-block;"></span>
+                        <div>
+                            <div class="fw-semibold small">${projectName}${taskTitle ? ' · ' + taskTitle : ''}</div>
+                            <div class="text-muted-fh" style="font-size: 0.78rem;">${description}</div>
+                        </div>
+                    </div>
+                    <span class="fw-semibold small">${hours}h</span>
+                `;
+                document.getElementById('todaySessionsList').appendChild(row);
+
+                var hoursTodayTotalEl = document.getElementById('hoursTodayTotal');
+                var hoursTodayStatEl = document.getElementById('hoursTodayStat');
+                var currentTotal = parseFloat(hoursTodayStatEl.textContent) || 0;
+                var newTotal = Math.round((currentTotal + hours) * 10) / 10;
+                hoursTodayTotalEl.textContent = newTotal + 'h total';
+                hoursTodayStatEl.textContent = newTotal + 'h';
+            }
         })();
     </script>
 }

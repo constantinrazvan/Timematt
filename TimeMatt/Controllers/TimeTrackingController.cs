@@ -7,30 +7,45 @@ namespace TimeMatt.Controllers;
 
 public class TimeTrackingController : Controller
 {
-    private readonly TimeTrackingService _timeTrackingService;
-    private readonly ProjectService _projectService;
+    private readonly ITimeTrackingService _timeTrackingService;
+    private readonly IProjectService _projectService;
+    private readonly ITaskService _taskService;
 
-    public TimeTrackingController(TimeTrackingService timeTrackingService, ProjectService projectService)
+    public TimeTrackingController(ITimeTrackingService timeTrackingService, IProjectService projectService, ITaskService taskService)
     {
         _timeTrackingService = timeTrackingService;
         _projectService = projectService;
+        _taskService = taskService;
     }
 
-    public IActionResult Index()
+    public IActionResult Index(int? projectId, int? taskId)
     {
         var weeklyHours = _timeTrackingService.GetHoursForLastSevenDays();
+        var trackableProjects = _projectService.GetAll()
+            .Where(p => p.Status != ProjectStatus.Archived && p.Status != ProjectStatus.Completed)
+            .ToList();
+        var trackableProjectIds = trackableProjects.Select(p => p.Id).ToHashSet();
+
+        ViewBag.PreselectedProjectId = projectId;
+        ViewBag.PreselectedTaskId = taskId;
 
         var vm = new TimeTrackingViewModel
         {
-            ActiveProjects = _projectService.GetAll().Where(p => p.Status == ProjectStatus.Active).ToList(),
+            TrackableProjects = trackableProjects,
+            AllTasks = _taskService.GetAll()
+                .Where(t => trackableProjectIds.Contains(t.ProjectId))
+                .Select(t => new TaskOptionViewModel { Id = t.Id, ProjectId = t.ProjectId, Title = t.Title })
+                .ToList(),
             TodaySessions = _timeTrackingService.GetToday().Select(e =>
             {
                 var project = _projectService.GetById(e.ProjectId);
+                var task = e.TaskId.HasValue ? _taskService.GetById(e.TaskId.Value) : null;
                 return new TimeSessionViewModel
                 {
                     Id = e.Id,
                     ProjectName = project?.Name ?? "",
-                    Color = project?.Color ?? "#6366f1",
+                    TaskTitle = task?.Title,
+                    Color = project?.Color ?? "#7a4c8b",
                     Description = e.Description,
                     Hours = e.Hours,
                     Billable = e.Billable

@@ -11,7 +11,6 @@
 <div class="d-flex align-items-start justify-content-between mb-4 flex-wrap gap-2">
     <div>
         <div class="d-flex align-items-center gap-2 mb-1">
-            <span style="width: 10px; height: 10px; border-radius: 50%; background-color: @p.Color; display: inline-block;"></span>
             <h1 class="h3 fw-bold mb-0" id="projectTitleText">@p.Name</h1>
             <span class="fh-badge @p.Status.CssClass()" id="projectStatusBadge">@p.Status.Label()</span>
             <span class="fh-badge @p.PaymentType.CssClass()" id="projectPaymentBadge">@p.PaymentType.Label()</span>
@@ -65,7 +64,7 @@
             <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-tasks" type="button">Tasks <span class="fh-kanban-count ms-1">@Model.Tasks.Count</span></button>
         </li>
         <li class="nav-item">
-            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-files" type="button">Files <span class="fh-kanban-count ms-1">@Model.Files.Count</span></button>
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-files" type="button">Files <span class="fh-kanban-count ms-1" id="filesCount">@Model.Files.Count</span></button>
         </li>
         <li class="nav-item">
             <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-comments" type="button">Comments <span class="fh-kanban-count ms-1">@Model.Comments.Count</span></button>
@@ -105,14 +104,20 @@
             <div class="d-flex flex-column gap-2">
                 @foreach (var t in Model.Tasks)
                 {
-                    <div class="d-flex align-items-center justify-content-between p-3 rounded-3" style="background-color: var(--fh-surface-2);">
+                    <div class="d-flex align-items-center justify-content-between p-3" style="background-color: var(--fh-surface-2);">
                         <div>
                             <div class="fw-semibold small">@t.Title</div>
                             <div class="text-muted-fh" style="font-size: 0.75rem;">@t.Column.ColumnLabel() &middot; Due @t.Deadline.ToString("MMM d")</div>
                         </div>
                         <div class="d-flex align-items-center gap-2">
                             <span class="text-muted-fh small">@t.WorkedHours.Hours()/@t.EstimatedHours.Hours()h</span>
-                            <span class="fh-badge @t.Priority.CssClass()">@t.Priority</span>
+                            <span class="fh-badge fh-badge-no-dot @t.Priority.CssClass()">@t.Priority</span>
+                            <a asp-controller="TimeTracking" asp-action="Index" asp-route-projectId="@p.Id" asp-route-taskId="@t.Id" class="fh-icon-btn" title="Track time on this task">
+                                <i class="bi bi-stopwatch"></i>
+                            </a>
+                            <a asp-controller="Tasks" asp-action="Details" asp-route-id="@t.Id" class="fh-icon-btn" title="View task details">
+                                <i class="bi bi-arrow-up-right"></i>
+                            </a>
                         </div>
                     </div>
                 }
@@ -120,11 +125,14 @@
         </div>
 
         <div class="tab-pane fade" id="tab-files">
-            @if (Model.Files.Count == 0)
-            {
-                <p class="text-muted-fh mb-0 small">No files uploaded yet.</p>
-            }
-            <div class="d-flex flex-column gap-2">
+            <div class="d-flex justify-content-end mb-3">
+                <label class="btn btn-primary mb-0" for="fileUploadInput">
+                    <i class="bi bi-upload me-1"></i> Upload File
+                </label>
+                <input type="file" id="fileUploadInput" class="d-none" multiple />
+            </div>
+            <p class="text-muted-fh mb-0 small @(Model.Files.Count > 0 ? "d-none" : "")" id="noFilesMessage">No files uploaded yet.</p>
+            <div class="d-flex flex-column gap-2" id="filesList">
                 @foreach (var f in Model.Files)
                 {
                     <div class="d-flex align-items-center gap-3 p-2">
@@ -231,6 +239,43 @@
 
 @section Scripts {
     <script>
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        document.getElementById('fileUploadInput').addEventListener('change', function () {
+            var files = Array.from(this.files);
+            if (files.length === 0) return;
+
+            var noFilesMessage = document.getElementById('noFilesMessage');
+            var filesList = document.getElementById('filesList');
+            var filesCount = document.getElementById('filesCount');
+
+            files.forEach(function (file) {
+                if (noFilesMessage) {
+                    noFilesMessage.classList.add('d-none');
+                }
+
+                var extension = file.name.includes('.') ? file.name.split('.').pop().toUpperCase() : 'FILE';
+                var row = document.createElement('div');
+                row.className = 'd-flex align-items-center gap-3 p-2';
+                row.innerHTML = `
+                    <div class="fh-file-icon"><i class="bi bi-file-earmark-text"></i></div>
+                    <div class="flex-grow-1">
+                        <div class="fw-semibold small">${file.name}</div>
+                        <div class="text-muted-fh" style="font-size: 0.75rem;">${extension} &middot; ${formatFileSize(file.size)} &middot; uploaded by You just now</div>
+                    </div>
+                    <button class="fh-icon-btn" type="button"><i class="bi bi-download"></i></button>
+                `;
+                filesList.appendChild(row);
+                filesCount.textContent = parseInt(filesCount.textContent, 10) + 1;
+            });
+
+            this.value = '';
+        });
+
         const editModalEl = document.getElementById('editProjectModal');
         const editAmountLabel = document.getElementById('editProjectAmountLabel');
         const editPaymentType = document.getElementById('editProjectPaymentType');

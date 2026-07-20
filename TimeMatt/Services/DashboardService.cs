@@ -2,16 +2,16 @@ using TimeMatt.Models;
 
 namespace TimeMatt.Services;
 
-public class DashboardService
+public class DashboardService : IDashboardService
 {
-    private readonly ClientService _clientService;
-    private readonly ProjectService _projectService;
-    private readonly TaskService _taskService;
-    private readonly TimeTrackingService _timeTrackingService;
+    private readonly IClientService _clientService;
+    private readonly IProjectService _projectService;
+    private readonly ITaskService _taskService;
+    private readonly ITimeTrackingService _timeTrackingService;
 
     private readonly List<ActivityItem> _activity;
 
-    public DashboardService(ClientService clientService, ProjectService projectService, TaskService taskService, TimeTrackingService timeTrackingService)
+    public DashboardService(IClientService clientService, IProjectService projectService, ITaskService taskService, ITimeTrackingService timeTrackingService)
     {
         _clientService = clientService;
         _projectService = projectService;

@@ -1,0 +1,64 @@
+@model TaskDetailsViewModel
+@{
+    ViewData["Title"] = Model.Title;
+
+    string PriorityIcon(TaskPriority priority) => priority switch
+    {
+        TaskPriority.Urgent => "bi-exclamation-circle-fill",
+        TaskPriority.High => "bi-arrow-up-circle-fill",
+        TaskPriority.Medium => "bi-dash-circle-fill",
+        _ => "bi-arrow-down-circle-fill"
+    };
+
+    var pct = Model.EstimatedHours > 0 ? Math.Min(100, (int)(Model.WorkedHours / Model.EstimatedHours * 100)) : 0;
+}
+
+<a asp-controller="Tasks" asp-action="Index" class="text-muted-fh small mb-3 d-inline-block">
+    <i class="bi bi-arrow-left me-1"></i> Back to Tasks
+</a>
+
+<div class="d-flex align-items-start justify-content-between mb-4 flex-wrap gap-2">
+    <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <h1 class="h3 fw-bold mb-0">@Model.Title</h1>
+            <span class="fh-badge fh-badge-no-dot @Model.Priority.CssClass()"><i class="bi @PriorityIcon(Model.Priority)" style="font-size: 0.65rem;"></i> @Model.Priority</span>
+            <span class="fh-badge fh-badge-review">@Model.Column.ColumnLabel()</span>
+        </div>
+        <p class="text-muted-fh mb-0">
+            <a asp-controller="Projects" asp-action="Details" asp-route-id="@Model.ProjectId" class="text-decoration-none text-reset">@Model.ProjectName</a>
+            &middot; @Model.ClientName
+        </p>
+    </div>
+    <a asp-controller="TimeTracking" asp-action="Index" asp-route-projectId="@Model.ProjectId" asp-route-taskId="@Model.Id" class="btn btn-primary">
+        <i class="bi bi-stopwatch-fill me-1"></i> Track Time
+    </a>
+</div>
+
+<div class="fh-stat-grid mb-4">
+    <div class="fh-stat-card">
+        <div class="text-muted-fh small">Estimated Hours</div>
+        <div class="fh-stat-value">@Model.EstimatedHours.Hours()h</div>
+    </div>
+    <div class="fh-stat-card">
+        <div class="text-muted-fh small">Hours Worked</div>
+        <div class="fh-stat-value">@Model.WorkedHours.Hours()h</div>
+    </div>
+    <div class="fh-stat-card">
+        <div class="text-muted-fh small">Progress</div>
+        <div class="fh-stat-value">@(pct)%</div>
+    </div>
+    <div class="fh-stat-card">
+        <div class="text-muted-fh small">Deadline</div>
+        <div class="fh-stat-value">@Model.Deadline.ToString("MMM d, yyyy")</div>
+    </div>
+</div>
+
+<div class="fh-card p-4">
+    <h2 class="fh-section-title mb-2">Description</h2>
+    <p class="text-muted-fh mb-3">@Model.Description</p>
+
+    <div class="fh-progress mb-1">
+        <div class="fh-progress-bar" style="width: @(pct)%;"></div>
+    </div>
+    <div class="small text-muted-fh">@(pct)% of estimated hours logged</div>
+</div>

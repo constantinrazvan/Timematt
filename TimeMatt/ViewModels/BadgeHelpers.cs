@@ -46,4 +46,18 @@ public static class BadgeHelpers
     public static string CssClass(this PaymentType type) => type == PaymentType.Fixed ? "fh-badge-fixed" : "fh-badge-hourly";
 
     public static string Label(this PaymentType type) => type == PaymentType.Fixed ? "Fixed Price" : "Hourly";
+
+    public static string CssClass(this AccountRole role) => role switch
+    {
+        AccountRole.Owner => "fh-badge-fixed",
+        AccountRole.TeamMember => "fh-badge-active",
+        AccountRole.Client => "fh-badge-review",
+        _ => "fh-badge-draft"
+    };
+
+    public static string Label(this AccountRole role) => role switch
+    {
+        AccountRole.TeamMember => "Team Member",
+        _ => role.ToString()
+    };
 }

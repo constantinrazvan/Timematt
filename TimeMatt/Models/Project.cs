@@ -15,7 +15,7 @@ public class Project
     public DateTime Deadline { get; set; }
     public double HoursWorked { get; set; }
     public double EstimatedHours { get; set; }
-    public string Color { get; set; } = "#6366f1";
+    public string Color { get; set; } = "#7a4c8b";
 
     public decimal RevenueToDate => PaymentType == PaymentType.Fixed
         ? Math.Round(Budget * Progress / 100m, 0)

@@ -30,5 +30,21 @@ public class ProjectOptionViewModel
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string ClientName { get; set; } = string.Empty;
-    public string Color { get; set; } = "#6366f1";
+    public string Color { get; set; } = "#7a4c8b";
+}
+
+public class TaskDetailsViewModel
+{
+    public int Id { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public int ProjectId { get; set; }
+    public string ProjectName { get; set; } = string.Empty;
+    public string ClientName { get; set; } = string.Empty;
+    public string ProjectColor { get; set; } = "#7a4c8b";
+    public TaskColumn Column { get; set; }
+    public TaskPriority Priority { get; set; }
+    public double EstimatedHours { get; set; }
+    public double WorkedHours { get; set; }
+    public DateTime Deadline { get; set; }
 }

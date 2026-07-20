@@ -1,0 +1,50 @@
+@model List<NotificationItem>
+@{
+    ViewData["Title"] = "Notifications";
+    var unreadCount = Model.Count(n => !n.IsRead);
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+    <div>
+        <h1 class="h3 fw-bold mb-1">Notifications</h1>
+        <p class="text-muted-fh mb-0" id="unreadSummary">@(unreadCount > 0 ? $"{unreadCount} unread notification{(unreadCount == 1 ? "" : "s")}" : "You're all caught up.")</p>
+    </div>
+    <button class="btn btn-outline-secondary" type="button" id="markAllReadBtn" @(unreadCount == 0 ? "disabled" : "")>
+        <i class="bi bi-check2-all me-1"></i> Mark all as read
+    </button>
+</div>
+
+<div class="fh-card">
+    <div class="d-flex flex-column" id="notificationsList">
+        @foreach (var n in Model)
+        {
+            <div class="d-flex align-items-start gap-3 p-3 border-bottom fh-notification-row @(n.IsRead ? "" : "fh-notification-unread")" style="border-color: var(--fh-border) !important;" data-id="@n.Id">
+                <div class="fh-activity-icon" style="background: rgba(122,76,139,0.12); color: var(--bs-@n.IconColor);">
+                    <i class="bi @n.Icon"></i>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="small">@n.Title</div>
+                    <div class="text-muted-fh" style="font-size: 0.75rem;">@n.Timestamp.ToString("MMM d, yyyy 'at' h:mm tt")</div>
+                </div>
+                @if (!n.IsRead)
+                {
+                    <span class="fh-notification-unread-dot" title="Unread"></span>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('markAllReadBtn').addEventListener('click', function () {
+            document.querySelectorAll('.fh-notification-unread').forEach(function (row) {
+                row.classList.remove('fh-notification-unread');
+                var dot = row.querySelector('.fh-notification-unread-dot');
+                if (dot) dot.remove();
+            });
+            document.getElementById('unreadSummary').textContent = "You're all caught up.";
+            this.disabled = true;
+        });
+    </script>
+}

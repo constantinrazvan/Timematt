@@ -2,7 +2,7 @@ using TimeMatt.Models;
 
 namespace TimeMatt.Services;
 
-public class ProjectService
+public class ProjectService : IProjectService
 {
     private readonly List<Project> _projects;
     private readonly List<ProjectFile> _files;
@@ -13,11 +13,11 @@ public class ProjectService
         var today = DateTime.Today;
         _projects = new List<Project>
         {
-            new() { Id = 1, Name = "Corporate Website", Description = "Full redesign of the corporate marketing site with a new CMS.", ClientId = 1, Status = ProjectStatus.Active, PaymentType = PaymentType.Hourly, Budget = 18000, HourlyRate = 85, Progress = 65, StartDate = today.AddDays(-40), Deadline = today.AddDays(12), HoursWorked = 138, EstimatedHours = 210, Color = "#6366f1" },
+            new() { Id = 1, Name = "Corporate Website", Description = "Full redesign of the corporate marketing site with a new CMS.", ClientId = 1, Status = ProjectStatus.Active, PaymentType = PaymentType.Hourly, Budget = 18000, HourlyRate = 85, Progress = 65, StartDate = today.AddDays(-40), Deadline = today.AddDays(12), HoursWorked = 138, EstimatedHours = 210, Color = "#7a4c8b" },
             new() { Id = 2, Name = "CRM Platform", Description = "Custom CRM for managing leads, deals and customer communication.", ClientId = 2, Status = ProjectStatus.Active, PaymentType = PaymentType.Hourly, Budget = 42000, HourlyRate = 95, Progress = 40, StartDate = today.AddDays(-60), Deadline = today.AddDays(45), HoursWorked = 176, EstimatedHours = 440, Color = "#22c55e" },
             new() { Id = 3, Name = "Portfolio Website", Description = "Minimal one-page portfolio site with case studies.", ClientId = 3, Status = ProjectStatus.Completed, PaymentType = PaymentType.Fixed, Budget = 6500, HourlyRate = 75, Progress = 100, StartDate = today.AddDays(-95), Deadline = today.AddDays(-20), HoursWorked = 86, EstimatedHours = 86, Color = "#0ea5e9" },
             new() { Id = 4, Name = "Mobile App", Description = "Cross-platform mobile app for in-store loyalty rewards.", ClientId = 4, Status = ProjectStatus.OnHold, PaymentType = PaymentType.Hourly, Budget = 35000, HourlyRate = 90, Progress = 28, StartDate = today.AddDays(-50), Deadline = today.AddDays(80), HoursWorked = 98, EstimatedHours = 390, Color = "#f59e0b" },
-            new() { Id = 5, Name = "E-commerce Redesign", Description = "Storefront revamp with new checkout flow and product pages.", ClientId = 1, Status = ProjectStatus.Review, PaymentType = PaymentType.Fixed, Budget = 22000, HourlyRate = 85, Progress = 90, StartDate = today.AddDays(-70), Deadline = today.AddDays(5), HoursWorked = 232, EstimatedHours = 258, Color = "#a855f7" },
+            new() { Id = 5, Name = "E-commerce Redesign", Description = "Storefront revamp with new checkout flow and product pages.", ClientId = 1, Status = ProjectStatus.Review, PaymentType = PaymentType.Fixed, Budget = 22000, HourlyRate = 85, Progress = 90, StartDate = today.AddDays(-70), Deadline = today.AddDays(5), HoursWorked = 232, EstimatedHours = 258, Color = "#14b8a6" },
             new() { Id = 6, Name = "Brand Identity", Description = "New logo, color system and brand guidelines package.", ClientId = 5, Status = ProjectStatus.Draft, PaymentType = PaymentType.Fixed, Budget = 9000, HourlyRate = 80, Progress = 5, StartDate = today.AddDays(-2), Deadline = today.AddDays(35), HoursWorked = 4, EstimatedHours = 112, Color = "#ec4899" },
             new() { Id = 7, Name = "Internal Tools", Description = "Internal dashboard for order tracking and reporting.", ClientId = 2, Status = ProjectStatus.Archived, PaymentType = PaymentType.Hourly, Budget = 15000, HourlyRate = 90, Progress = 100, StartDate = today.AddDays(-260), Deadline = today.AddDays(-180), HoursWorked = 166, EstimatedHours = 166, Color = "#64748b" },
         };

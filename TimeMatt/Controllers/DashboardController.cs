@@ -1,3 +1,4 @@
+using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using TimeMatt.Services;
 using TimeMatt.ViewModels;
@@ -6,11 +7,13 @@ namespace TimeMatt.Controllers;
 
 public class DashboardController : Controller
 {
-    private readonly DashboardService _dashboardService;
+    private readonly IDashboardService _dashboardService;
+    private readonly IReportService _reportService;
 
-    public DashboardController(DashboardService dashboardService)
+    public DashboardController(IDashboardService dashboardService, IReportService reportService)
     {
         _dashboardService = dashboardService;
+        _reportService = reportService;
     }
 
     public IActionResult Index()
@@ -54,5 +57,19 @@ public class DashboardController : Controller
         };
 
         return View(vm);
+    }
+
+    public IActionResult Report()
+    {
+        return View(_reportService.BuildReport());
+    }
+
+    public IActionResult ExportCsv()
+    {
+        var report = _reportService.BuildReport();
+        var csv = _reportService.BuildCsv(report);
+        var bytes = new UTF8Encoding(true).GetBytes(csv);
+        var fileName = $"textmatt-report-{report.GeneratedAt:yyyy-MM-dd}.csv";
+        return File(bytes, "text/csv", fileName);
     }
 }

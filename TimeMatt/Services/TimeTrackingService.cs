@@ -2,7 +2,7 @@ using TimeMatt.Models;
 
 namespace TimeMatt.Services;
 
-public class TimeTrackingService
+public class TimeTrackingService : ITimeTrackingService
 {
     private readonly List<TimeEntry> _entries;
 

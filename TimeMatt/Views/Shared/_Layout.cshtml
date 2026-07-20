@@ -7,7 +7,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - FreelanceHub</title>
+    <title>@ViewData["Title"] - TextMatt</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
@@ -28,8 +28,8 @@
 
         <aside class="fh-sidebar" id="fhSidebar">
             <div class="fh-sidebar-brand">
-                <span class="fh-logo-mark"><i class="bi bi-lightning-charge-fill"></i></span>
-                <span>FreelanceHub</span>
+                <img src="~/logo-icon.png" alt="TimeMatt" style="height: 28px; width: auto;" />
+                <span>TimeMatt</span>
             </div>
             <nav class="fh-sidebar-nav">
                 <a class="fh-nav-link @(IsActive("Dashboard") ? "active" : "")" asp-controller="Dashboard" asp-action="Index">
@@ -50,16 +50,24 @@
                 <a class="fh-nav-link @(IsActive("Reports") ? "active" : "")" asp-controller="Reports" asp-action="Index">
                     <i class="bi bi-bar-chart-line-fill"></i> Reports
                 </a>
+                <a class="fh-nav-link @(IsActive("Accounts") ? "active" : "")" asp-controller="Accounts" asp-action="Index">
+                    <i class="bi bi-person-vcard-fill"></i> Accounts
+                </a>
                 <a class="fh-nav-link @(IsActive("Settings") ? "active" : "")" asp-controller="Settings" asp-action="Index">
                     <i class="bi bi-gear-fill"></i> Settings
                 </a>
             </nav>
             <div class="fh-sidebar-footer d-flex align-items-center gap-2">
                 <span class="fh-avatar fh-avatar-sm">AM</span>
-                <div>
-                    <div class="text-white fw-semibold" style="font-size: 0.8rem;">Alex Morgan</div>
+                <div class="flex-grow-1">
+                    <div class="text-white fw-semibold" style="font-size: 0.8rem;">@(User.Identity?.Name ?? "Alex Morgan")</div>
                     <div style="font-size: 0.72rem;">Freelancer</div>
                 </div>
+                <form asp-controller="Auth" asp-action="Logout" method="post">
+                    <button type="submit" class="fh-icon-btn" title="Log out" style="width: 32px; height: 32px;">
+                        <i class="bi bi-box-arrow-right"></i>
+                    </button>
+                </form>
             </div>
         </aside>
 
@@ -75,13 +83,25 @@
                     </div>
                 </div>
                 <div class="d-flex align-items-center gap-2">
+                    @* language selection *@
+                    <div class="dropdown">
+                        <button class="fh-icon-btn fh-lang-btn" id="languageToggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Change language">
+                            <span id="languageToggleLabel">EN</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageToggle">
+                            <li><a class="dropdown-item fh-lang-item" href="#" data-lang="RO" onclick="return false;"><span class="fh-lang-code">RO</span> Română</a></li>
+                            <li><a class="dropdown-item fh-lang-item" href="#" data-lang="FR" onclick="return false;"><span class="fh-lang-code">FR</span> Français</a></li>
+                            <li><a class="dropdown-item fh-lang-item" href="#" data-lang="EN" onclick="return false;"><span class="fh-lang-code">EN</span> English</a></li>
+                            <li><a class="dropdown-item fh-lang-item" href="#" data-lang="DE" onclick="return false;"><span class="fh-lang-code">DE</span> Deutsch</a></li>
+                        </ul>
+                    </div>
                     <button class="fh-icon-btn" id="themeToggle" type="button" aria-label="Toggle theme">
                         <i class="bi bi-moon-stars" id="themeToggleIcon"></i>
                     </button>
                     <div class="dropdown">
                         <button class="fh-icon-btn position-relative" id="notificationsToggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notifications">
                             <i class="bi bi-bell"></i>
-                            <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
+                            <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light fh-notification-dot"></span>
                         </button>
                         <div class="dropdown-menu dropdown-menu-end fh-notifications-menu p-0" aria-labelledby="notificationsToggle">
                             <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom" style="border-color: var(--fh-border) !important;">
@@ -110,7 +130,7 @@
                                 </div>
                             </a>
                             <div class="text-center py-2 border-top" style="border-color: var(--fh-border) !important;">
-                                <a href="#" class="small text-decoration-none" onclick="return false;">View all notifications</a>
+                                <a asp-controller="Notifications" asp-action="Index" class="small text-decoration-none">View all notifications</a>
                             </div>
                         </div>
                     </div>

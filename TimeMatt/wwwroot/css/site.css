@@ -5,16 +5,31 @@
   --fh-border: #e6e8ec;
   --fh-text: #1a1d23;
   --fh-text-muted: #6b7280;
-  --fh-primary: #6366f1;
-  --fh-primary-hover: #4f52d9;
+  --fh-primary: #7a4c8b;
+  --fh-primary-hover: #623c6f;
   --fh-sidebar-bg: #14151a;
   --fh-sidebar-text: #b6b8c2;
   --fh-sidebar-text-active: #ffffff;
   --fh-sidebar-hover: #1e2027;
   --fh-shadow: none;
   --fh-shadow-lg: none;
-  --fh-radius: 14px;
-  --fh-radius-sm: 10px;
+  --fh-radius: 0;
+  --fh-radius-sm: 0;
+
+  --bs-primary: #7a4c8b;
+  --bs-primary-rgb: 122, 76, 139;
+  --bs-link-color: #7a4c8b;
+  --bs-link-color-rgb: 122, 76, 139;
+  --bs-link-hover-color: #623c6f;
+  --bs-link-hover-color-rgb: 98, 60, 111;
+
+  --bs-border-radius: 0;
+  --bs-border-radius-sm: 0;
+  --bs-border-radius-lg: 0;
+  --bs-border-radius-xl: 0;
+  --bs-border-radius-xxl: 0;
+  --bs-border-radius-2xl: 0;
+  --bs-border-radius-pill: 0;
 }
 
 [data-bs-theme="dark"] {
@@ -28,10 +43,46 @@
   --fh-sidebar-hover: #16181f;
   --fh-shadow: none;
   --fh-shadow-lg: none;
+
+  --bs-primary: #7a4c8b;
+  --bs-primary-rgb: 122, 76, 139;
+  --bs-link-color: #9a70ab;
+  --bs-link-color-rgb: 154, 112, 171;
+  --bs-link-hover-color: #ab86ba;
+  --bs-link-hover-color-rgb: 171, 134, 186;
 }
 
 html, body {
   height: 100%;
+}
+
+.btn-primary {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: var(--fh-primary);
+  --bs-btn-border-color: var(--fh-primary);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: var(--fh-primary-hover);
+  --bs-btn-hover-border-color: var(--fh-primary-hover);
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: var(--fh-primary-hover);
+  --bs-btn-active-border-color: var(--fh-primary-hover);
+  --bs-btn-disabled-bg: var(--fh-primary);
+  --bs-btn-disabled-border-color: var(--fh-primary);
+  --bs-btn-focus-shadow-rgb: 122, 76, 139;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--fh-primary);
+  box-shadow: 0 0 0 0.25rem rgba(122, 76, 139, 0.25);
+}
+
+.rounded-circle {
+  border-radius: 0 !important;
+}
+
+.fh-notification-dot {
+  border-radius: 50% !important;
 }
 
 body {
@@ -84,8 +135,8 @@ a {
 .fh-sidebar-brand .fh-logo-mark {
   width: 32px;
   height: 32px;
-  border-radius: 9px;
-  background: linear-gradient(135deg, var(--fh-primary), #8b8ef0);
+  border-radius: 0;
+  background: var(--fh-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -95,7 +146,7 @@ a {
 
 .fh-sidebar-nav {
   flex: 1;
-  padding: 0.5rem 0.75rem;
+  padding: 0.5rem 0;
   overflow-y: auto;
 }
 
@@ -103,8 +154,8 @@ a {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.6rem 0.85rem;
-  border-radius: var(--fh-radius-sm);
+  padding: 0.6rem 1.25rem;
+  border-radius: 0;
   color: var(--fh-sidebar-text);
   font-weight: 500;
   font-size: 0.9rem;
@@ -177,14 +228,14 @@ a {
 .fh-card {
   background-color: var(--fh-surface);
   border: 1px solid var(--fh-border);
-  border-radius: var(--fh-radius);
+  border-radius: 0;
   box-shadow: var(--fh-shadow);
 }
 
 .fh-stat-card {
   background-color: var(--fh-surface);
   border: 1px solid var(--fh-border);
-  border-radius: var(--fh-radius);
+  border-radius: 0;
   padding: 1.1rem 1.25rem;
   box-shadow: var(--fh-shadow);
   transition: box-shadow 0.15s ease, transform 0.15s ease;
@@ -224,7 +275,7 @@ a {
 .fh-stat-icon {
   width: 42px;
   height: 42px;
-  border-radius: 10px;
+  border-radius: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -235,8 +286,8 @@ a {
 .fh-avatar {
   width: 36px;
   height: 36px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--fh-primary), #8b8ef0);
+  border-radius: 0;
+  background: var(--fh-primary);
   color: #fff;
   display: inline-flex;
   align-items: center;
@@ -294,7 +345,7 @@ a {
   align-items: center;
   gap: 0.35rem;
   padding: 0.3rem 0.6rem;
-  border-radius: 999px;
+  border-radius: 0;
   font-size: 0.74rem;
   font-weight: 600;
 }
@@ -303,14 +354,18 @@ a {
   content: "";
   width: 6px;
   height: 6px;
-  border-radius: 50%;
+  border-radius: 0;
   background-color: currentColor;
+}
+
+.fh-badge-no-dot::before {
+  content: none;
 }
 
 .fh-badge-draft { background-color: rgba(100, 116, 139, 0.14); color: #64748b; }
 .fh-badge-active { background-color: rgba(34, 197, 94, 0.14); color: #16a34a; }
 .fh-badge-onhold { background-color: rgba(245, 158, 11, 0.14); color: #b45309; }
-.fh-badge-review { background-color: rgba(99, 102, 241, 0.14); color: #6366f1; }
+.fh-badge-review { background-color: rgba(122, 76, 139, 0.14); color: #7a4c8b; }
 .fh-badge-completed { background-color: rgba(14, 165, 233, 0.14); color: #0284c7; }
 .fh-badge-archived { background-color: rgba(107, 114, 128, 0.14); color: #6b7280; }
 
@@ -322,15 +377,15 @@ a {
 /* Progress */
 .fh-progress {
   height: 6px;
-  border-radius: 999px;
+  border-radius: 0;
   background-color: var(--fh-surface-2);
   overflow: hidden;
 }
 
 .fh-progress-bar {
   height: 100%;
-  border-radius: 999px;
-  background: linear-gradient(90deg, var(--fh-primary), #8b8ef0);
+  border-radius: 0;
+  background: var(--fh-primary);
 }
 
 /* Kanban */
@@ -344,7 +399,7 @@ a {
 
 .fh-kanban-column {
   background-color: var(--fh-surface-2);
-  border-radius: var(--fh-radius);
+  border-radius: 0;
   padding: 0.85rem;
   min-height: 200px;
 }
@@ -361,7 +416,7 @@ a {
 .fh-kanban-count {
   background-color: var(--fh-surface);
   border: 1px solid var(--fh-border);
-  border-radius: 999px;
+  border-radius: 0;
   font-size: 0.72rem;
   padding: 0.1rem 0.5rem;
   color: var(--fh-text-muted);
@@ -377,7 +432,7 @@ a {
 .fh-task-card {
   background-color: var(--fh-surface);
   border: 1px solid var(--fh-border);
-  border-radius: var(--fh-radius-sm);
+  border-radius: 0;
   padding: 0.85rem;
   box-shadow: var(--fh-shadow);
   cursor: grab;
@@ -407,7 +462,7 @@ a {
 .fh-timer-dot {
   width: 10px;
   height: 10px;
-  border-radius: 50%;
+  border-radius: 0;
   background-color: #ef4444;
   display: inline-block;
   animation: fh-pulse 1.4s ease-in-out infinite;
@@ -422,7 +477,7 @@ a {
 .fh-search {
   background-color: var(--fh-surface-2);
   border: 1px solid var(--fh-border);
-  border-radius: 999px;
+  border-radius: 0;
   padding: 0.45rem 0.9rem;
   min-width: 260px;
 }
@@ -439,7 +494,7 @@ a {
 .fh-icon-btn {
   width: 38px;
   height: 38px;
-  border-radius: 10px;
+  border-radius: 0;
   border: 1px solid var(--fh-border);
   background-color: var(--fh-surface);
   color: var(--fh-text);
@@ -456,7 +511,7 @@ a {
 .fh-activity-icon {
   width: 34px;
   height: 34px;
-  border-radius: 9px;
+  border-radius: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -483,7 +538,7 @@ a {
 .fh-file-icon {
   width: 38px;
   height: 38px;
-  border-radius: 9px;
+  border-radius: 0;
   background-color: var(--fh-surface-2);
   display: flex;
   align-items: center;
@@ -494,7 +549,7 @@ a {
 /* Notifications */
 .fh-notifications-menu {
   width: 340px;
-  border-radius: var(--fh-radius);
+  border-radius: 0;
   border: 1px solid var(--fh-border);
   box-shadow: var(--fh-shadow-lg);
   overflow: hidden;
@@ -512,8 +567,55 @@ a {
   background-color: var(--fh-surface-2);
 }
 
+.fh-notification-row:last-child {
+  border-bottom: none !important;
+}
+
+.fh-notification-unread {
+  background-color: rgba(122, 76, 139, 0.05);
+}
+
+.fh-notification-unread-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--bs-danger);
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+
+/* Language selector */
+.fh-lang-btn {
+  width: auto;
+  min-width: 38px;
+  padding: 0 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.fh-lang-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.85rem;
+}
+
+.fh-lang-code {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 20px;
+  border-radius: 0;
+  background-color: var(--fh-surface-2);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
 /* Payment type badges */
-.fh-badge-fixed { background-color: rgba(99, 102, 241, 0.14); color: #6366f1; }
+.fh-badge-fixed { background-color: rgba(122, 76, 139, 0.14); color: #7a4c8b; }
 .fh-badge-hourly { background-color: rgba(13, 148, 136, 0.14); color: #0d9488; }
 
 ::-webkit-scrollbar {
@@ -523,5 +625,5 @@ a {
 
 ::-webkit-scrollbar-thumb {
   background-color: rgba(120, 120, 130, 0.35);
-  border-radius: 999px;
+  border-radius: 0;
 }

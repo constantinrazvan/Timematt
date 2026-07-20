@@ -7,11 +7,11 @@ namespace TimeMatt.Controllers;
 
 public class TasksController : Controller
 {
-    private readonly TaskService _taskService;
-    private readonly ProjectService _projectService;
-    private readonly ClientService _clientService;
+    private readonly ITaskService _taskService;
+    private readonly IProjectService _projectService;
+    private readonly IClientService _clientService;
 
-    public TasksController(TaskService taskService, ProjectService projectService, ClientService clientService)
+    public TasksController(ITaskService taskService, IProjectService projectService, IClientService clientService)
     {
         _taskService = taskService;
         _projectService = projectService;
@@ -52,6 +52,36 @@ public class TasksController : Controller
                 ClientName = _clientService.GetById(p.ClientId)?.Company ?? "",
                 Color = p.Color
             }).ToList()
+        };
+
+        return View(vm);
+    }
+
+    public IActionResult Details(int id)
+    {
+        var task = _taskService.GetById(id);
+        if (task is null)
+        {
+            return NotFound();
+        }
+
+        var project = _projectService.GetById(task.ProjectId);
+        var client = project is not null ? _clientService.GetById(project.ClientId) : null;
+
+        var vm = new TaskDetailsViewModel
+        {
+            Id = task.Id,
+            Title = task.Title,
+            Description = task.Description,
+            ProjectId = task.ProjectId,
+            ProjectName = project?.Name ?? "",
+            ClientName = client?.Company ?? "",
+            ProjectColor = project?.Color ?? "#7a4c8b",
+            Column = task.Column,
+            Priority = task.Priority,
+            EstimatedHours = task.EstimatedHours,
+            WorkedHours = task.WorkedHours,
+            Deadline = task.Deadline
         };
 
         return View(vm);

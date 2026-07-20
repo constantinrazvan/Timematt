@@ -54,11 +54,13 @@
     <div class="modal-dialog">
         <div class="modal-content rounded-4">
             <form id="newClientForm">
+                @Html.AntiForgeryToken()
                 <div class="modal-header">
                     <h5 class="modal-title fw-bold">New Client</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body d-flex flex-column gap-3">
+                    <div class="alert alert-danger py-2 small mb-0 d-none" id="newClientError"></div>
                     <div>
                         <label class="form-label small fw-semibold">Name</label>
                         <input type="text" class="form-control rounded-3" id="clientName" required />
@@ -71,10 +73,13 @@
                         <label class="form-label small fw-semibold">Email</label>
                         <input type="email" class="form-control rounded-3" id="clientEmail" required />
                     </div>
+                    <p class="text-muted-fh small mb-0">
+                        <i class="bi bi-envelope me-1"></i>An invite email with a temporary password and a 48-hour setup link will be sent to this address.
+                    </p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary rounded-3" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary rounded-3">Add Client</button>
+                    <button type="submit" class="btn btn-primary rounded-3" id="newClientSubmit">Send Invite</button>
                 </div>
             </form>
         </div>
@@ -83,34 +88,65 @@
 
 @section Scripts {
     <script>
-        document.getElementById('newClientForm').addEventListener('submit', function (e) {
+        document.getElementById('newClientForm').addEventListener('submit', async function (e) {
             e.preventDefault();
+
+            const errorBox = document.getElementById('newClientError');
+            const submitBtn = document.getElementById('newClientSubmit');
+            errorBox.classList.add('d-none');
 
             const name = document.getElementById('clientName').value.trim();
             const company = document.getElementById('clientCompany').value.trim();
             const email = document.getElementById('clientEmail').value.trim();
             if (!name || !company || !email) return;
 
-            const initials = name.split(' ').map(function (p) { return p[0]; }).join('').substring(0, 2).toUpperCase();
+            const token = this.querySelector('input[name="__RequestVerificationToken"]').value;
 
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td style="padding-left: 1.25rem;">
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="fh-avatar">${initials}</span>
-                        <span class="fw-semibold">${name}</span>
-                    </div>
-                </td>
-                <td>${company}</td>
-                <td class="text-muted-fh">${email}</td>
-                <td>0</td>
-                <td>0h</td>
-                <td class="text-end" style="padding-right: 1.25rem;"><i class="bi bi-chevron-right text-muted-fh"></i></td>
-            `;
-            document.querySelector('#clientsTable tbody').prepend(row);
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Sending invite...';
 
-            this.reset();
-            bootstrap.Modal.getInstance(document.getElementById('newClientModal')).hide();
+            try {
+                const response = await fetch('@Url.Action("Create", "Clients")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'RequestVerificationToken': token
+                    },
+                    body: new URLSearchParams({ Name: name, Company: company, Email: email, __RequestVerificationToken: token })
+                });
+
+                if (!response.ok) {
+                    const problem = await response.json().catch(() => null);
+                    errorBox.textContent = problem?.Email?.[0] || problem?.[0] || 'Could not create this client. Please check the details and try again.';
+                    errorBox.classList.remove('d-none');
+                    return;
+                }
+
+                const data = await response.json();
+                const row = document.createElement('tr');
+                row.className = 'fh-table-row-link';
+                row.onclick = function () { window.location = '@Url.Action("Details")/' + data.client.id; };
+                row.innerHTML = `
+                    <td style="padding-left: 1.25rem;">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="fh-avatar">${data.client.avatar}</span>
+                            <span class="fw-semibold">${data.client.name}</span>
+                        </div>
+                    </td>
+                    <td>${data.client.company}</td>
+                    <td class="text-muted-fh">${data.client.email}</td>
+                    <td>0</td>
+                    <td>0h</td>
+                    <td class="text-end" style="padding-right: 1.25rem;"><i class="bi bi-chevron-right text-muted-fh"></i></td>
+                `;
+                document.querySelector('#clientsTable tbody').prepend(row);
+
+                this.reset();
+                bootstrap.Modal.getInstance(document.getElementById('newClientModal')).hide();
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Send Invite';
+            }
         });
     </script>
 }

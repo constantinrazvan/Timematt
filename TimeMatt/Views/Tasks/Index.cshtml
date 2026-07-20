@@ -60,7 +60,10 @@
                         <div class="fh-task-card" data-task-id="@t.Id">
                             <div class="d-flex align-items-start justify-content-between mb-2">
                                 <span class="fw-semibold small">@t.Title</span>
-                                <span class="fh-badge @t.Priority.CssClass()"><i class="bi @PriorityIcon(t.Priority)" style="font-size: 0.65rem;"></i> @t.Priority</span>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="fh-badge fh-badge-no-dot @t.Priority.CssClass()"><i class="bi @PriorityIcon(t.Priority)" style="font-size: 0.65rem;"></i> @t.Priority</span>
+                                    <a asp-controller="Tasks" asp-action="Details" asp-route-id="@t.Id" class="text-muted-fh" title="View task details"><i class="bi bi-arrow-up-right-circle"></i></a>
+                                </div>
                             </div>
                             <div class="text-muted-fh mb-2" style="font-size: 0.78rem;">@t.ProjectName &middot; @t.ClientName</div>
                             <div class="fh-progress mb-2">
@@ -98,11 +101,11 @@
                 <tbody id="listViewBody">
                     @foreach (var t in allTasks)
                     {
-                        <tr>
+                        <tr class="fh-table-row-link" onclick="window.location='@Url.Action("Details", new { id = t.Id })'">
                             <td style="padding-left: 1.25rem;" class="fw-semibold">@t.Title</td>
                             <td class="text-muted-fh">@t.ProjectName &middot; @t.ClientName</td>
                             <td><span class="fh-badge fh-badge-review">@t.Column.ColumnLabel()</span></td>
-                            <td><span class="fh-badge @t.Priority.CssClass()">@t.Priority</span></td>
+                            <td><span class="fh-badge fh-badge-no-dot @t.Priority.CssClass()">@t.Priority</span></td>
                             <td>@t.WorkedHours.Hours()/@t.EstimatedHours.Hours()h</td>
                             <td>@t.Deadline.ToString("MMM d, yyyy")</td>
                         </tr>
@@ -118,18 +121,20 @@
         @foreach (var t in allTasks)
         {
             <div class="col-sm-6 col-xl-3">
-                <div class="fh-card h-100 p-3">
-                    <div class="d-flex align-items-start justify-content-between mb-2">
-                        <span class="fw-semibold small">@t.Title</span>
-                        <span class="fh-badge @t.Priority.CssClass()">@t.Priority</span>
+                <a asp-controller="Tasks" asp-action="Details" asp-route-id="@t.Id" class="text-decoration-none text-reset">
+                    <div class="fh-card h-100 p-3">
+                        <div class="d-flex align-items-start justify-content-between mb-2">
+                            <span class="fw-semibold small">@t.Title</span>
+                            <span class="fh-badge fh-badge-no-dot @t.Priority.CssClass()">@t.Priority</span>
+                        </div>
+                        <div class="text-muted-fh mb-2" style="font-size: 0.78rem;">@t.ProjectName &middot; @t.ClientName</div>
+                        <span class="fh-badge fh-badge-review mb-2">@t.Column.ColumnLabel()</span>
+                        <div class="d-flex align-items-center justify-content-between text-muted-fh mt-2" style="font-size: 0.75rem;">
+                            <span><i class="bi bi-clock me-1"></i>@t.WorkedHours.Hours()/@t.EstimatedHours.Hours()h</span>
+                            <span><i class="bi bi-calendar-event me-1"></i>@t.Deadline.ToString("MMM d")</span>
+                        </div>
                     </div>
-                    <div class="text-muted-fh mb-2" style="font-size: 0.78rem;">@t.ProjectName &middot; @t.ClientName</div>
-                    <span class="fh-badge fh-badge-review mb-2">@t.Column.ColumnLabel()</span>
-                    <div class="d-flex align-items-center justify-content-between text-muted-fh mt-2" style="font-size: 0.75rem;">
-                        <span><i class="bi bi-clock me-1"></i>@t.WorkedHours.Hours()/@t.EstimatedHours.Hours()h</span>
-                        <span><i class="bi bi-calendar-event me-1"></i>@t.Deadline.ToString("MMM d")</span>
-                    </div>
-                </div>
+                </a>
             </div>
         }
     </div>
@@ -260,7 +265,7 @@
             kanbanCard.innerHTML = `
                 <div class="d-flex align-items-start justify-content-between mb-2">
                     <span class="fw-semibold small">${title}</span>
-                    <span class="fh-badge ${priorityClassMap[priority]}"><i class="bi ${priorityIconMap[priority]}" style="font-size: 0.65rem;"></i> ${priority}</span>
+                    <span class="fh-badge fh-badge-no-dot ${priorityClassMap[priority]}"><i class="bi ${priorityIconMap[priority]}" style="font-size: 0.65rem;"></i> ${priority}</span>
                 </div>
                 <div class="text-muted-fh mb-2" style="font-size: 0.78rem;">${projectName} &middot; ${clientName}</div>
                 <div class="fh-progress mb-2"><div class="fh-progress-bar" style="width: 0%;"></div></div>
@@ -278,7 +283,7 @@
                 <td style="padding-left: 1.25rem;" class="fw-semibold">${title}</td>
                 <td class="text-muted-fh">${projectName} &middot; ${clientName}</td>
                 <td><span class="fh-badge fh-badge-review">${columnLabelMap[column]}</span></td>
-                <td><span class="fh-badge ${priorityClassMap[priority]}">${priority}</span></td>
+                <td><span class="fh-badge fh-badge-no-dot ${priorityClassMap[priority]}">${priority}</span></td>
                 <td>0/${estimatedHours}h</td>
                 <td>${deadlineLong}</td>
             `;
@@ -290,7 +295,7 @@
                 <div class="fh-card h-100 p-3">
                     <div class="d-flex align-items-start justify-content-between mb-2">
                         <span class="fw-semibold small">${title}</span>
-                        <span class="fh-badge ${priorityClassMap[priority]}">${priority}</span>
+                        <span class="fh-badge fh-badge-no-dot ${priorityClassMap[priority]}">${priority}</span>
                     </div>
                     <div class="text-muted-fh mb-2" style="font-size: 0.78rem;">${projectName} &middot; ${clientName}</div>
                     <span class="fh-badge fh-badge-review mb-2">${columnLabelMap[column]}</span>

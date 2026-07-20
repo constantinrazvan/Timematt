@@ -8,14 +8,20 @@
         <h1 class="h3 fw-bold mb-1">Good to see you, Alex</h1>
         <p class="text-muted-fh mb-0">Here's what's happening across your projects today.</p>
     </div>
-    <a asp-controller="TimeTracking" asp-action="Index" class="btn btn-primary rounded-3 px-3">
-        <i class="bi bi-stopwatch-fill me-1"></i> Start Timer
-    </a>
+    <div class="dropdown">
+        <button class="btn btn-primary rounded-3 px-3 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-file-earmark-arrow-down me-1"></i> Generate Report
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" asp-controller="Dashboard" asp-action="Report" target="_blank"><i class="bi bi-file-earmark-pdf me-2"></i>Export as PDF</a></li>
+            <li><a class="dropdown-item" asp-controller="Dashboard" asp-action="ExportCsv"><i class="bi bi-file-earmark-spreadsheet me-2"></i>Export as CSV</a></li>
+        </ul>
+    </div>
 </div>
 
 <div class="fh-stat-grid mb-4">
     <div class="fh-stat-card fh-stat-card-flex">
-        <div class="fh-stat-icon" style="background: rgba(99,102,241,0.12); color: #6366f1;"><i class="bi bi-kanban-fill"></i></div>
+        <div class="fh-stat-icon" style="background: rgba(122,76,139,0.12); color: #7a4c8b;"><i class="bi bi-kanban-fill"></i></div>
         <div class="fh-stat-body">
             <div class="text-muted-fh small">Active Projects</div>
             <div class="fh-stat-value">@Model.ActiveProjects</div>
@@ -29,7 +35,7 @@
         </div>
     </div>
     <div class="fh-stat-card fh-stat-card-flex">
-        <div class="fh-stat-icon" style="background: rgba(168,85,247,0.12); color: #9333ea;"><i class="bi bi-cash-stack"></i></div>
+        <div class="fh-stat-icon" style="background: rgba(20,184,166,0.12); color: #0d9488;"><i class="bi bi-cash-stack"></i></div>
         <div class="fh-stat-body">
             <div class="text-muted-fh small">Est. Revenue</div>
             <div class="fh-stat-value" title="@Model.EstimatedRevenue.Money()">@Model.EstimatedRevenue.Money()</div>
@@ -73,7 +79,7 @@
                 </div>
                 <div class="d-flex flex-wrap justify-content-center gap-3 mt-3">
                     @{
-                        var revenueColors = new[] { "#6366f1", "#22c55e", "#0ea5e9", "#f59e0b", "#a855f7", "#ec4899" };
+                        var revenueColors = new[] { "#7a4c8b", "#22c55e", "#0ea5e9", "#f59e0b", "#14b8a6", "#ec4899" };
                     }
                     @for (var i = 0; i < Model.RevenueProjectLabels.Count; i++)
                     {
@@ -99,7 +105,7 @@
                     @foreach (var item in Model.RecentActivity)
                     {
                         <div class="d-flex gap-3">
-                            <div class="fh-activity-icon" style="background: rgba(99,102,241,0.12); color: var(--bs-@item.IconColor);">
+                            <div class="fh-activity-icon" style="background: rgba(122,76,139,0.12); color: var(--bs-@item.IconColor);">
                                 <i class="bi @item.Icon"></i>
                             </div>
                             <div>
@@ -127,7 +133,7 @@
                                 <div class="fw-semibold small">@d.ProjectName</div>
                                 <div class="text-muted-fh" style="font-size: 0.78rem;">@d.ClientName</div>
                             </div>
-                            <span class="fh-badge @(d.DaysLeft <= 3 ? "fh-badge-urgent" : "fh-badge-review")">
+                            <span class="fh-badge fh-badge-no-dot @(d.DaysLeft <= 3 ? "fh-badge-urgent" : "fh-badge-review")">
                                 @(d.DaysLeft == 0 ? "Today" : d.DaysLeft + "d left")
                             </span>
                         </a>
@@ -150,10 +156,9 @@
                         <a asp-controller="Projects" asp-action="Details" asp-route-id="@p.Id" class="text-decoration-none text-reset">
                             <div class="d-flex align-items-center justify-content-between mb-1">
                                 <div class="d-flex align-items-center gap-2">
-                                    <span style="width: 8px; height: 8px; border-radius: 50%; background-color: @p.Color; display: inline-block;"></span>
                                     <span class="fw-semibold small">@p.Name</span>
                                 </div>
-                                <span class="fh-badge @p.Status.CssClass()">@p.Status.Label()</span>
+                                <span class="fh-badge fh-badge-no-dot @p.Status.CssClass()">@p.Status.Label()</span>
                             </div>
                             <div class="fh-progress">
                                 <div class="fh-progress-bar" style="width: @(p.Progress)%;"></div>
@@ -173,25 +178,42 @@
         Chart.defaults.font.family = "Inter, sans-serif";
         Chart.defaults.color = fhTextColor || '#6b7280';
 
+        const fhPrimaryColor = getComputedStyle(document.documentElement).getPropertyValue('--fh-primary').trim();
+
+        function hexToRgb(hex) {
+            var parsed = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return parsed ? [parseInt(parsed[1], 16), parseInt(parsed[2], 16), parseInt(parsed[3], 16)] : [122, 76, 139];
+        }
+
         const weeklyHoursCtx = document.getElementById('weeklyHoursChart').getContext('2d');
-        const barGradient = weeklyHoursCtx.createLinearGradient(0, 0, 0, 240);
-        barGradient.addColorStop(0, '#818cf8');
-        barGradient.addColorStop(1, '#6366f1');
+        const [pr, pg, pb] = hexToRgb(fhPrimaryColor);
+        const areaGradient = weeklyHoursCtx.createLinearGradient(0, 0, 0, 260);
+        areaGradient.addColorStop(0, `rgba(${pr}, ${pg}, ${pb}, 0.35)`);
+        areaGradient.addColorStop(1, `rgba(${pr}, ${pg}, ${pb}, 0)`);
 
         new Chart(weeklyHoursCtx, {
-            type: 'bar',
+            type: 'line',
             data: {
                 labels: @Html.Raw(Json.Serialize(Model.WeekDayLabels)),
                 datasets: [{
                     label: 'Hours',
                     data: @Html.Raw(Json.Serialize(Model.WeekDayHours)),
-                    backgroundColor: barGradient,
-                    borderRadius: 8,
-                    maxBarThickness: 42
+                    borderColor: fhPrimaryColor,
+                    backgroundColor: areaGradient,
+                    borderWidth: 2.5,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 0,
+                    pointHoverRadius: 5,
+                    pointBackgroundColor: fhPrimaryColor,
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointHoverBackgroundColor: fhPrimaryColor
                 }]
             },
             options: {
                 maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
                 plugins: {
                     legend: { display: false },
                     tooltip: { callbacks: { label: (ctx) => ctx.parsed.y.toFixed(1) + ' hours' } }
@@ -209,7 +231,7 @@
                 labels: @Html.Raw(Json.Serialize(Model.RevenueProjectLabels)),
                 datasets: [{
                     data: @Html.Raw(Json.Serialize(Model.RevenueProjectValues)),
-                    backgroundColor: ['#6366f1', '#22c55e', '#0ea5e9', '#f59e0b', '#a855f7', '#ec4899'],
+                    backgroundColor: ['#7a4c8b', '#22c55e', '#0ea5e9', '#f59e0b', '#14b8a6', '#ec4899'],
                     borderWidth: 3,
                     borderColor: getComputedStyle(document.documentElement).getPropertyValue('--fh-surface').trim()
                 }]

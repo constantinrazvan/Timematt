@@ -42,5 +42,23 @@
       });
       overlay.addEventListener("click", closeSidebar);
     }
+
+    var languageLabel = document.getElementById("languageToggleLabel");
+    var languageItems = document.querySelectorAll(".fh-lang-item");
+    var storedLang = localStorage.getItem("fh-lang") || "EN";
+
+    if (languageLabel) {
+      languageLabel.textContent = storedLang;
+    }
+
+    languageItems.forEach(function (item) {
+      item.addEventListener("click", function () {
+        var lang = this.getAttribute("data-lang");
+        localStorage.setItem("fh-lang", lang);
+        if (languageLabel) {
+          languageLabel.textContent = lang;
+        }
+      });
+    });
   });
 })();

@@ -20,15 +20,11 @@
             <a asp-controller="Projects" asp-action="Details" asp-route-id="@p.Id" class="text-decoration-none text-reset">
                 <div class="fh-card h-100 p-3">
                     <div class="d-flex align-items-start justify-content-between mb-2">
-                        <div class="d-flex align-items-center gap-2">
-                            <span style="width: 10px; height: 10px; border-radius: 50%; background-color: @p.Color; display: inline-block;"></span>
-                            <span class="fw-semibold">@p.Name</span>
-                        </div>
-                        <span class="fh-badge @p.Status.CssClass()">@p.Status.Label()</span>
+                        <span class="fw-semibold">@p.Name</span>
+                        <span class="fh-badge fh-badge-no-dot @p.Status.CssClass()">@p.Status.Label()</span>
                     </div>
-                    <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div class="mb-3">
                         <span class="text-muted-fh small">@p.ClientName</span>
-                        <span class="fh-badge @p.PaymentType.CssClass()">@p.PaymentType.Label()</span>
                     </div>
 
                     <div class="fh-progress mb-1">
@@ -123,8 +119,6 @@
             projectAmountLabel.textContent = this.value === 'Fixed' ? 'Fixed Budget ($)' : 'Hourly Rate ($)';
         });
 
-        const projectColors = ['#6366f1', '#22c55e', '#0ea5e9', '#f59e0b', '#a855f7', '#ec4899'];
-
         document.getElementById('newProjectForm').addEventListener('submit', function (e) {
             e.preventDefault();
 
@@ -138,28 +132,21 @@
 
             const deadline = new Date(deadlineRaw + 'T00:00:00');
             const deadlineLabel = deadline.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-            const color = projectColors[Math.floor(Math.random() * projectColors.length)];
             const statusClassMap = { Draft: 'fh-badge-draft', Active: 'fh-badge-active', OnHold: 'fh-badge-onhold', Review: 'fh-badge-review' };
             const statusLabelMap = { Draft: 'Draft', Active: 'Active', OnHold: 'On Hold', Review: 'Review' };
             const amountLabel = paymentType === 'Fixed' ? 'Fixed Budget' : 'Rate';
             const amountValue = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount) + (paymentType === 'Hourly' ? '/hr' : '');
-            const paymentBadgeClass = paymentType === 'Fixed' ? 'fh-badge-fixed' : 'fh-badge-hourly';
-            const paymentBadgeLabel = paymentType === 'Fixed' ? 'Fixed Price' : 'Hourly';
 
             const col = document.createElement('div');
             col.className = 'col-md-6 col-xl-4';
             col.innerHTML = `
                 <div class="fh-card h-100 p-3">
                     <div class="d-flex align-items-start justify-content-between mb-2">
-                        <div class="d-flex align-items-center gap-2">
-                            <span style="width: 10px; height: 10px; border-radius: 50%; background-color: ${color}; display: inline-block;"></span>
-                            <span class="fw-semibold">${name}</span>
-                        </div>
-                        <span class="fh-badge ${statusClassMap[status]}">${statusLabelMap[status]}</span>
+                        <span class="fw-semibold">${name}</span>
+                        <span class="fh-badge fh-badge-no-dot ${statusClassMap[status]}">${statusLabelMap[status]}</span>
                     </div>
-                    <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div class="mb-3">
                         <span class="text-muted-fh small">${client}</span>
-                        <span class="fh-badge ${paymentBadgeClass}">${paymentBadgeLabel}</span>
                     </div>
                     <div class="fh-progress mb-1"><div class="fh-progress-bar" style="width: 0%;"></div></div>
                     <div class="d-flex justify-content-between text-muted-fh mb-3" style="font-size: 0.78rem;">

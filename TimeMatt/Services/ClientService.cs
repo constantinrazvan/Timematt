@@ -2,7 +2,7 @@ using TimeMatt.Models;
 
 namespace TimeMatt.Services;
 
-public class ClientService
+public class ClientService : IClientService
 {
     private readonly List<Client> _clients;
 
@@ -22,4 +22,24 @@ public class ClientService
     public List<Client> GetAll() => _clients;
 
     public Client? GetById(int id) => _clients.FirstOrDefault(c => c.Id == id);
+
+    public Client Add(string name, string company, string email)
+    {
+        var initials = string.Concat(name.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Select(part => char.ToUpperInvariant(part[0])))
+            .PadRight(2)[..2];
+
+        var client = new Client
+        {
+            Id = _clients.Count == 0 ? 1 : _clients.Max(c => c.Id) + 1,
+            Name = name,
+            Company = company,
+            Email = email,
+            Avatar = initials,
+            ClientSince = DateTime.Today
+        };
+
+        _clients.Add(client);
+        return client;
+    }
 }

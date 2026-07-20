@@ -68,8 +68,46 @@
             </div>
         </div>
 
-        <div class="d-flex justify-content-end mt-3">
+        <div class="d-flex justify-content-end mt-3 mb-3">
             <button class="btn btn-primary rounded-3 px-4" type="button">Save Changes</button>
+        </div>
+
+        <div class="fh-card">
+            <div class="fh-card-header">
+                <h2 class="fh-section-title">Change Password</h2>
+            </div>
+            <div class="fh-card-body">
+                @{
+                    var changePassword = (ChangePasswordViewModel)ViewBag.ChangePassword;
+                }
+                @if (changePassword.Success)
+                {
+                    <div class="alert alert-success py-2 small" role="alert">Your password was updated successfully.</div>
+                }
+                @if (!string.IsNullOrEmpty(changePassword.ErrorMessage))
+                {
+                    <div class="alert alert-danger py-2 small" role="alert">@changePassword.ErrorMessage</div>
+                }
+                <form asp-controller="Settings" asp-action="ChangePassword" method="post">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Current Password</label>
+                            <input type="password" class="form-control rounded-3" name="CurrentPassword" required />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">New Password</label>
+                            <input type="password" class="form-control rounded-3" name="NewPassword" required minlength="8" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Confirm New Password</label>
+                            <input type="password" class="form-control rounded-3" name="ConfirmPassword" required minlength="8" />
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end mt-3">
+                        <button class="btn btn-outline-secondary rounded-3 px-4" type="submit">Update Password</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 

@@ -7,10 +7,10 @@ namespace TimeMatt.Controllers;
 
 public class ReportsController : Controller
 {
-    private readonly ProjectService _projectService;
-    private readonly TimeTrackingService _timeTrackingService;
+    private readonly IProjectService _projectService;
+    private readonly ITimeTrackingService _timeTrackingService;
 
-    public ReportsController(ProjectService projectService, TimeTrackingService timeTrackingService)
+    public ReportsController(IProjectService projectService, ITimeTrackingService timeTrackingService)
     {
         _projectService = projectService;
         _timeTrackingService = timeTrackingService;

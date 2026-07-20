@@ -7,11 +7,11 @@ namespace TimeMatt.Controllers;
 
 public class ProjectsController : Controller
 {
-    private readonly ProjectService _projectService;
-    private readonly ClientService _clientService;
-    private readonly TaskService _taskService;
+    private readonly IProjectService _projectService;
+    private readonly IClientService _clientService;
+    private readonly ITaskService _taskService;
 
-    public ProjectsController(ProjectService projectService, ClientService clientService, TaskService taskService)
+    public ProjectsController(IProjectService projectService, IClientService clientService, ITaskService taskService)
     {
         _projectService = projectService;
         _clientService = clientService;
