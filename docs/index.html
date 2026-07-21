@@ -3,279 +3,487 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>TimeMatt — Open-Source Dashboard for Freelancers</title>
-<meta name="description" content="TimeMatt is a self-hosted, open-source dashboard for freelancers: clients, projects, Kanban tasks, time tracking, reports and real authentication — built with ASP.NET Core." />
-<link rel="icon" href="assets/logo-icon.png" />
+<title>TimeMatt — the freelance dashboard you actually own</title>
+<meta name="description" content="TimeMatt is a self-hosted, open-source dashboard for freelancers: clients, projects, a Kanban board, a real time tracker and exportable reports — built on ASP.NET Core, running on your own database." />
+
+<!-- Bootstrap 5 (CDN) -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+
 <style>
-  :root {
-    --bg: #f6f7f9;
-    --surface: #ffffff;
-    --surface-2: #f1f2f5;
-    --border: #e6e8ec;
-    --text: #1a1d23;
-    --text-muted: #6b7280;
-    --primary: #7a4c8b;
-    --primary-dark: #623c6f;
-    --radius: 14px;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #0f1115;
-      --surface: #171a21;
-      --surface-2: #1e222a;
-      --border: #2a2e38;
-      --text: #e8e9ed;
-      --text-muted: #9297a3;
-    }
-  }
-  * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    line-height: 1.5;
-  }
-  a { color: inherit; }
-  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
-
-  header.nav {
-    position: sticky; top: 0; z-index: 20;
-    background: color-mix(in srgb, var(--bg) 85%, transparent);
-    backdrop-filter: blur(8px);
-    border-bottom: 1px solid var(--border);
-  }
-  .nav-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; }
-  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.05rem; text-decoration: none; }
-  .brand img { height: 30px; width: auto; }
-  .nav-links { display: flex; align-items: center; gap: 28px; font-size: 0.92rem; }
-  .nav-links a { text-decoration: none; color: var(--text-muted); }
-  .nav-links a:hover { color: var(--text); }
-  .btn {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 10px 18px; border-radius: 10px; font-weight: 600; font-size: 0.92rem;
-    text-decoration: none; border: 1px solid transparent; cursor: pointer;
-  }
-  .btn-primary { background: var(--primary); color: #fff; }
-  .btn-primary:hover { background: var(--primary-dark); }
-  .btn-outline { border-color: var(--border); color: var(--text); }
-  .btn-outline:hover { background: var(--surface-2); }
-
-  .hero { padding: 96px 0 64px; text-align: center; }
-  .eyebrow {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 6px 14px; border-radius: 999px; border: 1px solid var(--border);
-    background: var(--surface); font-size: 0.8rem; color: var(--text-muted); margin-bottom: 24px;
-  }
-  .eyebrow .dot { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; display: inline-block; }
-  .hero h1 { font-size: clamp(2.1rem, 5vw, 3.4rem); font-weight: 800; margin: 0 0 18px; letter-spacing: -0.02em; }
-  .hero h1 span { color: var(--primary); }
-  .hero p.lead { max-width: 620px; margin: 0 auto 32px; color: var(--text-muted); font-size: 1.1rem; }
-  .hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 56px; }
-
-  /* Product mockup */
-  .mockup {
-    max-width: 980px; margin: 0 auto; border-radius: 18px; overflow: hidden;
-    border: 1px solid var(--border); background: var(--surface);
-    box-shadow: 0 30px 80px -30px rgba(0,0,0,0.35);
-  }
-  .mockup-bar { display: flex; align-items: center; gap: 6px; padding: 12px 16px; border-bottom: 1px solid var(--border); }
-  .mockup-bar span { width: 10px; height: 10px; border-radius: 50%; background: var(--border); }
-  .mockup-body { display: flex; min-height: 340px; }
-  .mockup-sidebar { width: 190px; flex-shrink: 0; background: #14151a; padding: 18px 14px; display: none; }
-  @media (min-width: 700px) { .mockup-sidebar { display: block; } }
-  .mockup-sidebar .item { color: #b6b8c2; font-size: 0.78rem; padding: 8px 10px; border-radius: 8px; margin-bottom: 4px; }
-  .mockup-sidebar .item.active { background: var(--primary); color: #fff; }
-  .mockup-main { flex: 1; padding: 20px; text-align: left; }
-  .mockup-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 16px; }
-  .mockup-stat { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
-  .mockup-stat .label { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; }
-  .mockup-stat .value { font-size: 1.1rem; font-weight: 700; }
-  .mockup-chart { border: 1px solid var(--border); border-radius: 10px; padding: 14px; height: 120px; display: flex; align-items: flex-end; gap: 8px; }
-  .mockup-chart i { flex: 1; background: linear-gradient(180deg, var(--primary), color-mix(in srgb, var(--primary) 40%, transparent)); border-radius: 4px 4px 0 0; }
-
-  section { padding: 72px 0; }
-  .section-head { text-align: center; max-width: 640px; margin: 0 auto 44px; }
-  .section-head .kicker { color: var(--primary); font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; }
-  .section-head h2 { font-size: clamp(1.6rem, 3vw, 2.2rem); margin: 8px 0 10px; letter-spacing: -0.01em; }
-  .section-head p { color: var(--text-muted); }
-
-  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
-  .card {
-    border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface);
-    padding: 22px; text-align: left;
-  }
-  .card .icon {
-    width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
-    background: color-mix(in srgb, var(--primary) 14%, transparent); color: var(--primary); margin-bottom: 14px;
-    font-size: 1.05rem; font-weight: 700;
-  }
-  .card h3 { font-size: 1rem; margin: 0 0 6px; }
-  .card p { color: var(--text-muted); font-size: 0.9rem; margin: 0; }
-
-  .stack-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
-  .pill {
-    border: 1px solid var(--border); background: var(--surface); border-radius: 999px;
-    padding: 8px 16px; font-size: 0.85rem; color: var(--text-muted);
+  :root{
+    --bg:#f1eff5;
+    --surface:#ffffff;
+    --surface-2:#faf9fc;
+    --panel:#201826;          /* dark hero card */
+    --panel-2:#2b2133;
+    --ink:#1b1622;
+    --muted:#6d6879;
+    --plum:#6d3f83;
+    --plum-strong:#552f68;
+    --gold:#e0a63a;           /* accent — used only for "live" moments */
+    --border:#e6e1ec;
+    --border-dark:rgba(255,255,255,.09);
+    --radius:16px;
+    --shadow:0 24px 60px -32px rgba(40,22,55,.55);
+    --font-display:"Space Grotesk",system-ui,sans-serif;
+    --font-body:"Inter",system-ui,sans-serif;
+    --font-mono:"JetBrains Mono",ui-monospace,monospace;
   }
 
-  .cta {
-    text-align: center; border: 1px solid var(--border); border-radius: 20px;
-    background: var(--surface); padding: 56px 32px;
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
   }
-  .cta h2 { margin: 0 0 10px; font-size: 1.7rem; }
-  .cta p { color: var(--text-muted); margin: 0 0 24px; }
+  ::selection{background:var(--plum);color:#fff;}
 
-  pre {
-    background: #14151a; color: #e8e9ed; border-radius: 12px; padding: 18px 20px;
-    overflow-x: auto; font-size: 0.85rem; text-align: left;
+  .display{font-family:var(--font-display);letter-spacing:-.02em;}
+  .mono{font-family:var(--font-mono);}
+  .eyebrow{
+    font-family:var(--font-mono);font-size:.72rem;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--muted);
   }
-  pre .muted { color: #9297a3; }
 
-  footer { border-top: 1px solid var(--border); padding: 32px 0; text-align: center; color: var(--text-muted); font-size: 0.85rem; }
-  footer a { text-decoration: underline; }
+  /* ---------- buttons ---------- */
+  .tm-btn{
+    display:inline-flex;align-items:center;gap:.5rem;
+    font-weight:600;font-size:.94rem;text-decoration:none;
+    padding:.72rem 1.25rem;border-radius:11px;border:1px solid transparent;
+    transition:transform .15s ease,background .15s ease,border-color .15s ease;
+  }
+  .tm-btn:active{transform:translateY(1px);}
+  .tm-btn-primary{background:var(--plum);color:#fff;}
+  .tm-btn-primary:hover{background:var(--plum-strong);color:#fff;}
+  .tm-btn-ghost{color:var(--ink);border-color:var(--border);background:var(--surface);}
+  .tm-btn-ghost:hover{background:var(--surface-2);}
+  .tm-btn-onpanel{color:#efe9f2;border-color:var(--border-dark);background:rgba(255,255,255,.04);}
+  .tm-btn-onpanel:hover{background:rgba(255,255,255,.1);color:#fff;}
+
+  /* ---------- nav ---------- */
+  .navbar{
+    background:color-mix(in srgb,var(--bg) 82%,transparent);
+    backdrop-filter:saturate(140%) blur(10px);
+    border-bottom:1px solid var(--border);
+  }
+  .brand-mark{
+    width:34px;height:34px;border-radius:9px;background:var(--ink);
+    display:grid;place-items:center;color:var(--gold);flex:none;
+  }
+  .navbar-brand{font-family:var(--font-display);font-weight:700;letter-spacing:-.01em;color:var(--ink);}
+  .nav-link{color:var(--muted)!important;font-size:.92rem;font-weight:500;}
+  .nav-link:hover{color:var(--ink)!important;}
+
+  /* ---------- hero ---------- */
+  .hero{padding:clamp(3rem,7vw,6rem) 0 clamp(3rem,6vw,5rem);}
+  .hero h1{font-size:clamp(2.4rem,5.4vw,4rem);font-weight:700;line-height:1.02;}
+  .hero h1 .thru{color:var(--plum);position:relative;white-space:nowrap;}
+  .hero .lead{color:var(--muted);font-size:1.12rem;max-width:34ch;}
+  .trust{font-family:var(--font-mono);font-size:.78rem;color:var(--muted);}
+  .trust i{color:var(--plum);}
+
+  /* live tracker card (the signature) */
+  .tracker{
+    background:linear-gradient(165deg,var(--panel),var(--panel-2));
+    border:1px solid var(--border-dark);border-radius:22px;color:#efe9f2;
+    padding:1.4rem;box-shadow:var(--shadow);position:relative;overflow:hidden;
+  }
+  .tracker::before{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(120% 80% at 85% -10%,rgba(224,166,58,.16),transparent 55%);
+  }
+  .tracker .row-top{display:flex;justify-content:space-between;align-items:center;position:relative;}
+  .tracker .win{display:flex;gap:6px;}
+  .tracker .win span{width:9px;height:9px;border-radius:50%;background:rgba(255,255,255,.16);}
+  .rec{display:inline-flex;align-items:center;gap:7px;font-family:var(--font-mono);
+       font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:#c9c1d1;}
+  .rec .dot{width:9px;height:9px;border-radius:50%;background:#5a4d66;}
+  .tracker.live .rec .dot{background:var(--gold);box-shadow:0 0 0 0 rgba(224,166,58,.6);animation:pulse 1.6s infinite;}
+  @keyframes pulse{70%{box-shadow:0 0 0 8px rgba(224,166,58,0);}100%{box-shadow:0 0 0 0 rgba(224,166,58,0);}}
+
+  .tracker .task-label{font-size:.8rem;color:#a99fb5;margin:1.4rem 0 .15rem;position:relative;}
+  .tracker .task-name{font-family:var(--font-display);font-weight:600;font-size:1.15rem;position:relative;}
+  .clock{
+    font-family:var(--font-mono);font-weight:700;
+    font-size:clamp(2.6rem,8vw,3.6rem);letter-spacing:.02em;line-height:1;
+    margin:.5rem 0 1.1rem;position:relative;
+    font-variant-numeric:tabular-nums;
+  }
+  .clock .cs{color:var(--gold);}
+  .ctrl{display:flex;gap:.5rem;position:relative;}
+  .ctrl button{
+    flex:1;font-family:var(--font-body);font-weight:600;font-size:.9rem;
+    border-radius:10px;padding:.6rem;border:1px solid var(--border-dark);
+    background:rgba(255,255,255,.05);color:#efe9f2;cursor:pointer;transition:background .15s;
+  }
+  .ctrl button:hover{background:rgba(255,255,255,.12);}
+  .ctrl .go{background:var(--gold);color:#241a08;border-color:transparent;}
+  .ctrl .go:hover{background:#eeb64f;}
+  .today{display:flex;justify-content:space-between;align-items:center;
+         margin-top:1.1rem;font-family:var(--font-mono);font-size:.74rem;color:#a99fb5;position:relative;}
+  .today .bar{height:6px;border-radius:99px;background:rgba(255,255,255,.1);flex:1;margin:0 .8rem;overflow:hidden;}
+  .today .bar > i{display:block;height:100%;width:34%;background:var(--plum);border-radius:99px;transition:width .4s;}
+
+  /* ---------- sections ---------- */
+  section{padding:clamp(3.5rem,7vw,6rem) 0;}
+  .sec-kicker{font-family:var(--font-mono);font-size:.74rem;letter-spacing:.14em;
+              text-transform:uppercase;color:var(--plum);}
+  .sec-title{font-family:var(--font-display);font-weight:700;font-size:clamp(1.7rem,3.4vw,2.5rem);letter-spacing:-.01em;}
+  .sec-sub{color:var(--muted);max-width:52ch;}
+
+  /* bento */
+  .bento{display:grid;gap:14px;grid-template-columns:repeat(6,1fr);}
+  .tile{
+    background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+    padding:1.4rem;grid-column:span 2;transition:border-color .2s,transform .2s;
+  }
+  .tile:hover{border-color:color-mix(in srgb,var(--plum) 40%,var(--border));transform:translateY(-2px);}
+  .tile .ic{color:var(--plum);font-size:1.3rem;margin-bottom:.7rem;display:inline-flex;}
+  .tile h3{font-family:var(--font-display);font-weight:600;font-size:1.05rem;margin-bottom:.3rem;}
+  .tile p{color:var(--muted);font-size:.9rem;margin:0;}
+  .tile.wide{grid-column:span 3;}
+  @media(max-width:860px){.bento{grid-template-columns:repeat(2,1fr);}
+    .tile,.tile.wide{grid-column:span 1;}}
+  @media(max-width:520px){.bento{grid-template-columns:1fr;}
+    .tile,.tile.wide{grid-column:span 1;}}
+
+  /* mini kanban preview */
+  .kb{display:flex;gap:8px;margin-top:1rem;}
+  .kb .col{flex:1;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:8px;}
+  .kb .col b{font-family:var(--font-mono);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px;}
+  .kb .chip{background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:6px 8px;font-size:.72rem;margin-bottom:6px;box-shadow:0 1px 0 rgba(0,0,0,.02);}
+  .kb .chip.pk{border-left:3px solid var(--plum);}
+  .kb .chip.gd{border-left:3px solid var(--gold);}
+
+  /* mini report preview */
+  .spark{margin-top:1rem;}
+  .spark svg{width:100%;height:74px;display:block;}
+
+  /* stack manifest */
+  .manifest{
+    background:var(--panel);border-radius:var(--radius);border:1px solid var(--border-dark);
+    padding:1.6rem 1.4rem;font-family:var(--font-mono);font-size:.86rem;color:#d7cfe0;box-shadow:var(--shadow);
+  }
+  .manifest .ln{display:flex;justify-content:space-between;padding:.42rem 0;border-bottom:1px dashed rgba(255,255,255,.07);}
+  .manifest .ln:last-child{border-bottom:0;}
+  .manifest .k{color:#a99fb5;}
+  .manifest .v{color:#fff;}
+  .manifest .v .g{color:var(--gold);}
+
+  /* terminal / get started */
+  .term{background:var(--panel);border-radius:14px;overflow:hidden;border:1px solid var(--border-dark);box-shadow:var(--shadow);}
+  .term-bar{display:flex;align-items:center;gap:6px;padding:.7rem 1rem;border-bottom:1px solid var(--border-dark);}
+  .term-bar span{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.16);}
+  .term-bar .title{margin-left:.6rem;font-family:var(--font-mono);font-size:.72rem;color:#8f869c;}
+  .term-bar .copy{margin-left:auto;background:rgba(255,255,255,.06);border:1px solid var(--border-dark);color:#cfc7da;
+                  border-radius:7px;font-size:.72rem;padding:.3rem .6rem;cursor:pointer;font-family:var(--font-mono);}
+  .term-bar .copy:hover{background:rgba(255,255,255,.12);}
+  .term pre{margin:0;padding:1.2rem 1.3rem;color:#e9e4ef;font-family:var(--font-mono);font-size:.86rem;line-height:1.7;overflow-x:auto;}
+  .term pre .c{color:#8a7f98;}
+  .term pre .p{color:var(--gold);}
+
+  /* cta */
+  .cta{background:linear-gradient(165deg,var(--panel),var(--panel-2));border-radius:24px;color:#efe9f2;
+       padding:clamp(2.5rem,5vw,4rem);text-align:center;box-shadow:var(--shadow);position:relative;overflow:hidden;}
+  .cta::before{content:"";position:absolute;inset:0;background:radial-gradient(100% 90% at 50% -20%,rgba(224,166,58,.14),transparent 60%);}
+  .cta h2{font-family:var(--font-display);font-weight:700;font-size:clamp(1.6rem,3.4vw,2.4rem);position:relative;}
+  .cta p{color:#b7adc2;position:relative;}
+
+  footer{border-top:1px solid var(--border);padding:2.2rem 0;color:var(--muted);font-size:.85rem;}
+  footer a{color:var(--plum);text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
+
+  /* entrance */
+  .reveal{opacity:0;transform:translateY(14px);transition:opacity .6s ease,transform .6s ease;}
+  .reveal.in{opacity:1;transform:none;}
+  @media(prefers-reduced-motion:reduce){
+    .reveal{opacity:1;transform:none;transition:none;}
+    .tracker.live .rec .dot{animation:none;}
+    html{scroll-behavior:auto;}
+  }
 </style>
 </head>
 <body>
 
-<header class="nav">
-  <div class="wrap nav-row">
-    <a class="brand" href="#top">
-      <img src="assets/logo-icon.png" alt="TimeMatt" />
+<!-- NAV -->
+<nav class="navbar navbar-expand-lg sticky-top">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="#top">
       TimeMatt
     </a>
-    <nav class="nav-links">
-      <a href="#features">Features</a>
-      <a href="#stack">Tech Stack</a>
-      <a href="#start">Get Started</a>
-      <a href="https://github.com/constantinrazvan/Timematt" target="_blank" rel="noopener">GitHub</a>
-    </nav>
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="nav">
+      <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+        <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
+        <li class="nav-item"><a class="nav-link" href="#stack">Stack</a></li>
+        <li class="nav-item"><a class="nav-link" href="#start">Get started</a></li>
+        <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
+          <a class="tm-btn tm-btn-primary" href="https://github.com/constantinrazvan/Timematt" target="_blank" rel="noopener">
+            <i class="bi bi-github"></i> GitHub
+          </a>
+        </li>
+      </ul>
+    </div>
   </div>
-</header>
+</nav>
 
 <main id="top">
-  <section class="hero wrap">
-    <div class="eyebrow"><span class="dot"></span> Open source &middot; MIT licensed &middot; self-hosted</div>
-    <h1>The freelance dashboard<br /><span>you actually own.</span></h1>
-    <p class="lead">Clients, projects, Kanban tasks, time tracking and reports in one self-hosted app. No subscription, no vendor lock-in — clone it, run it, make it yours.</p>
-    <div class="hero-actions">
-      <a class="btn btn-primary" href="https://github.com/constantinrazvan/Timematt" target="_blank" rel="noopener">View on GitHub</a>
-      <a class="btn btn-outline" href="#start">Get Started</a>
-    </div>
 
-    <div class="mockup">
-      <div class="mockup-bar"><span></span><span></span><span></span></div>
-      <div class="mockup-body">
-        <div class="mockup-sidebar">
-          <div class="item active">Dashboard</div>
-          <div class="item">Clients</div>
-          <div class="item">Projects</div>
-          <div class="item">Tasks</div>
-          <div class="item">Time Tracking</div>
-          <div class="item">Reports</div>
-          <div class="item">Accounts</div>
-          <div class="item">Settings</div>
-        </div>
-        <div class="mockup-main">
-          <div class="mockup-stats">
-            <div class="mockup-stat"><div class="label">Active Projects</div><div class="value">6</div></div>
-            <div class="mockup-stat"><div class="label">Clients</div><div class="value">12</div></div>
-            <div class="mockup-stat"><div class="label">Revenue</div><div class="value">$18.4k</div></div>
-            <div class="mockup-stat"><div class="label">Pending Tasks</div><div class="value">9</div></div>
+  <!-- HERO -->
+  <header class="hero">
+    <div class="container">
+      <div class="row align-items-center g-5">
+        <div class="col-lg-6">
+          <div class="eyebrow mb-3">Open source · MIT · self&#8209;hosted</div>
+          <h1 class="display mb-4">The freelance dashboard<br /><span class="thru">you actually own.</span></h1>
+          <p class="lead mb-4">Clients, projects, a Kanban board, a real timer and exportable reports — running on <strong>your</strong> server, against <strong>your</strong> database. No subscription. No lock‑in. Clone it and it's yours.</p>
+          <div class="d-flex flex-wrap gap-2 mb-3">
+            <a class="tm-btn tm-btn-primary" href="https://github.com/constantinrazvan/Timematt" target="_blank" rel="noopener"><i class="bi bi-github"></i> View on GitHub</a>
+            <a class="tm-btn tm-btn-ghost" href="#start"><i class="bi bi-terminal"></i> Self‑host in 5 minutes</a>
           </div>
-          <div class="mockup-chart">
-            <i style="height:35%"></i><i style="height:55%"></i><i style="height:40%"></i>
-            <i style="height:70%"></i><i style="height:50%"></i><i style="height:85%"></i><i style="height:60%"></i>
+          <div class="trust"><i class="bi bi-dot"></i>MIT licensed &nbsp;·&nbsp; .NET 10 &nbsp;·&nbsp; MySQL / MariaDB</div>
+        </div>
+
+        <!-- SIGNATURE: a working timer, the product's core feature, live in the hero -->
+        <div class="col-lg-6">
+          <div class="tracker" id="tracker" aria-label="Live time tracker demo">
+            <div class="row-top">
+              <div class="win"><span></span><span></span><span></span></div>
+              <div class="rec"><span class="dot"></span><span id="recText">idle</span></div>
+            </div>
+            <div class="task-label">Tracking · Acme Studio</div>
+            <div class="task-name">Website redesign — homepage</div>
+            <div class="clock" id="clock" role="timer" aria-live="off">00:00:<span class="cs" id="cs">00</span></div>
+            <div class="ctrl">
+              <button class="go" id="startBtn"><i class="bi bi-play-fill"></i> Start</button>
+              <button id="pauseBtn"><i class="bi bi-pause-fill"></i> Pause</button>
+              <button id="resetBtn"><i class="bi bi-arrow-counterclockwise"></i> Reset</button>
+            </div>
+            <div class="today">
+              <span>Today</span>
+              <span class="bar"><i id="todayBar"></i></span>
+              <span id="todayVal">2h 41m</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- FEATURES (bento) -->
+  <section id="features">
+    <div class="container">
+      <div class="mb-4 mb-lg-5 reveal">
+        <div class="sec-kicker mb-2">What's inside</div>
+        <h2 class="sec-title mb-2">One workspace, not five open tabs</h2>
+        <p class="sec-sub">Everything a solo freelancer tracks between quoting a job and getting paid — in a single app you control.</p>
+      </div>
+
+      <div class="bento">
+        <!-- wide: time tracking -->
+        <div class="tile wide reveal">
+          <span class="ic"><i class="bi bi-stopwatch"></i></span>
+          <h3>Time tracking</h3>
+          <p>Start, pause and stop a timer against a specific project and task. Roll it up into daily, weekly and monthly summaries.</p>
+          <div class="today mt-3" style="color:var(--muted)">
+            <span class="mono" style="font-size:.72rem">MON</span>
+            <span class="bar" style="background:var(--surface-2);border:1px solid var(--border)"><i style="width:62%;background:var(--plum)"></i></span>
+            <span class="mono" style="font-size:.72rem;color:var(--ink)">4h 58m</span>
+          </div>
+        </div>
+
+        <!-- wide: tasks / kanban -->
+        <div class="tile wide reveal">
+          <span class="ic"><i class="bi bi-kanban"></i></span>
+          <h3>Tasks &amp; Kanban</h3>
+          <p>Drag cards across a board, or switch to list and grid views. Every task gets its own detail page.</p>
+          <div class="kb">
+            <div class="col"><b>To do</b><div class="chip pk">Fix invoice PDF</div><div class="chip">Client call</div></div>
+            <div class="col"><b>Doing</b><div class="chip gd">Homepage build</div></div>
+            <div class="col"><b>Done</b><div class="chip">Wireframes</div></div>
+          </div>
+        </div>
+
+        <div class="tile reveal">
+          <span class="ic"><i class="bi bi-people"></i></span>
+          <h3>Clients</h3>
+          <p>A CRM‑style list with per‑client revenue, hours logged and full project history.</p>
+        </div>
+
+        <div class="tile reveal">
+          <span class="ic"><i class="bi bi-folder2-open"></i></span>
+          <h3>Projects</h3>
+          <p>Status, fixed‑price or hourly billing, files and comments — per project.</p>
+        </div>
+
+        <div class="tile reveal">
+          <span class="ic"><i class="bi bi-graph-up"></i></span>
+          <h3>Reports</h3>
+          <p>Hours and revenue charts, with one‑click PDF and CSV export.</p>
+          <div class="spark" aria-hidden="true">
+            <svg viewBox="0 0 220 74" preserveAspectRatio="none">
+              <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#6d3f83" stop-opacity=".35"/><stop offset="1" stop-color="#6d3f83" stop-opacity="0"/>
+              </linearGradient></defs>
+              <path d="M0,55 L30,48 L60,52 L90,30 L120,38 L150,18 L180,26 L220,8 L220,74 L0,74 Z" fill="url(#g)"/>
+              <path d="M0,55 L30,48 L60,52 L90,30 L120,38 L150,18 L180,26 L220,8" fill="none" stroke="#6d3f83" stroke-width="2"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="tile reveal">
+          <span class="ic"><i class="bi bi-shield-lock"></i></span>
+          <h3>Real auth</h3>
+          <p>ASP.NET Core Identity with roles, forgot / reset password, and a client invite sent by email.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STACK -->
+  <section id="stack">
+    <div class="container">
+      <div class="row g-5 align-items-center">
+        <div class="col-lg-5 reveal">
+          <div class="sec-kicker mb-2">Under the hood</div>
+          <h2 class="sec-title mb-2">A boring, reliable stack</h2>
+          <p class="sec-sub">No exotic dependencies and nothing to rent. It's plain ASP.NET Core, Razor and a database you already know how to back up.</p>
+        </div>
+        <div class="col-lg-7 reveal">
+          <div class="manifest">
+            <div class="ln"><span class="k">framework</span><span class="v">ASP.NET Core MVC <span class="g">(.NET 10)</span></span></div>
+            <div class="ln"><span class="k">views</span><span class="v">Razor + Bootstrap 5</span></div>
+            <div class="ln"><span class="k">data</span><span class="v">Entity Framework Core 9</span></div>
+            <div class="ln"><span class="k">database</span><span class="v">MySQL / MariaDB</span></div>
+            <div class="ln"><span class="k">auth</span><span class="v">ASP.NET Core Identity</span></div>
+            <div class="ln"><span class="k">charts</span><span class="v">Chart.js</span></div>
+            <div class="ln"><span class="k">drag &amp; drop</span><span class="v">SortableJS</span></div>
+            <div class="ln"><span class="k">license</span><span class="v"><span class="g">MIT</span></span></div>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <section id="features" class="wrap">
-    <div class="section-head">
-      <div class="kicker">Features</div>
-      <h2>Everything a freelancer's workflow needs</h2>
-      <p>One workspace instead of five different SaaS tabs.</p>
-    </div>
-    <div class="grid">
-      <div class="card">
-        <div class="icon">C</div>
-        <h3>Clients</h3>
-        <p>A CRM-style list of clients with per-client revenue, hours and project history.</p>
-      </div>
-      <div class="card">
-        <div class="icon">P</div>
-        <h3>Projects</h3>
-        <p>Track status, fixed-price or hourly billing, files and comments per project.</p>
-      </div>
-      <div class="card">
-        <div class="icon">T</div>
-        <h3>Tasks</h3>
-        <p>A drag-and-drop Kanban board, plus list and grid views, with a detail page per task.</p>
-      </div>
-      <div class="card">
-        <div class="icon">⏱</div>
-        <h3>Time Tracking</h3>
-        <p>Start, pause and stop a timer against a specific project and task, with daily/weekly/monthly summaries.</p>
-      </div>
-      <div class="card">
-        <div class="icon">R</div>
-        <h3>Reports</h3>
-        <p>Hours and revenue charts, with one-click PDF and CSV export of the whole workspace.</p>
-      </div>
-      <div class="card">
-        <div class="icon">A</div>
-        <h3>Real Auth</h3>
-        <p>ASP.NET Core Identity with roles, forgot/reset password, and a client invite flow delivered by email.</p>
-      </div>
-    </div>
-  </section>
-
-  <section id="stack" class="wrap">
-    <div class="section-head">
-      <div class="kicker">Tech Stack</div>
-      <h2>Built on a boring, reliable stack</h2>
-      <p>No exotic dependencies — just ASP.NET Core, Razor and a real database.</p>
-    </div>
-    <div class="stack-row">
-      <span class="pill">ASP.NET Core MVC (.NET 10)</span>
-      <span class="pill">Razor Views</span>
-      <span class="pill">Bootstrap 5</span>
-      <span class="pill">Entity Framework Core 9</span>
-      <span class="pill">MySQL / MariaDB</span>
-      <span class="pill">ASP.NET Core Identity</span>
-      <span class="pill">Chart.js</span>
-      <span class="pill">SortableJS</span>
-    </div>
-  </section>
-
-  <section id="start" class="wrap">
-    <div class="cta">
-      <h2>Self-host it in a few minutes</h2>
-      <p>Clone the repo, point it at your own MySQL database, and run it.</p>
-      <pre><span class="muted"># clone</span>
+  <!-- GET STARTED -->
+  <section id="start">
+    <div class="container">
+      <div class="row g-5 align-items-center">
+        <div class="col-lg-5 reveal">
+          <div class="sec-kicker mb-2">Get started</div>
+          <h2 class="sec-title mb-2">Running on your machine in minutes</h2>
+          <p class="sec-sub">Clone the repo, point <span class="mono" style="font-size:.85em">appsettings.json</span> at your own MySQL database, apply the migrations, and run.</p>
+          <div class="d-flex flex-wrap gap-2 mt-3">
+            <a class="tm-btn tm-btn-primary" href="https://github.com/constantinrazvan/Timematt" target="_blank" rel="noopener"><i class="bi bi-box-arrow-up-right"></i> Get the code</a>
+            <a class="tm-btn tm-btn-ghost" href="https://github.com/constantinrazvan/Timematt/blob/main/README.md" target="_blank" rel="noopener"><i class="bi bi-book"></i> Read the docs</a>
+          </div>
+        </div>
+        <div class="col-lg-7 reveal">
+          <div class="term">
+            <div class="term-bar">
+              <span></span><span></span><span></span>
+              <span class="title">bash — TimeMatt</span>
+              <button class="copy" id="copyBtn">Copy</button>
+            </div>
+<pre id="code"><span class="c"># clone</span>
 git clone https://github.com/constantinrazvan/Timematt.git
 cd Timematt/TimeMatt
 
-<span class="muted"># configure your database in appsettings.json, then</span>
+<span class="c"># configure your database in appsettings.json, then</span>
 dotnet ef database update
 dotnet run</pre>
-      <div class="hero-actions" style="margin-top: 24px;">
-        <a class="btn btn-primary" href="https://github.com/constantinrazvan/Timematt" target="_blank" rel="noopener">Get the code</a>
-        <a class="btn btn-outline" href="https://github.com/constantinrazvan/Timematt/blob/main/README.md" target="_blank" rel="noopener">Read the docs</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section>
+    <div class="container">
+      <div class="cta reveal">
+        <h2 class="mb-2">Stop renting your own data.</h2>
+        <p class="mb-4">TimeMatt is free and open source. Clone it, host it, and make it yours.</p>
+        <div class="d-flex flex-wrap gap-2 justify-content-center position-relative">
+          <a class="tm-btn tm-btn-onpanel" href="https://github.com/constantinrazvan/Timematt" target="_blank" rel="noopener"><i class="bi bi-star"></i> Star it on GitHub</a>
+          <a class="tm-btn go" style="background:var(--gold);color:#241a08;border:1px solid transparent;font-weight:600;padding:.72rem 1.25rem;border-radius:11px;text-decoration:none;display:inline-flex;align-items:center;gap:.5rem" href="#start"><i class="bi bi-terminal"></i> Self‑host it</a>
+        </div>
       </div>
     </div>
   </section>
 </main>
 
 <footer>
-  <div class="wrap">
-    TimeMatt is free and open source under the MIT license &middot;
-    <a href="https://github.com/constantinrazvan/Timematt" target="_blank" rel="noopener">Star it on GitHub</a>
+  <div class="container d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2">
+    <span>TimeMatt — free and open source under the MIT license.</span>
+    <a href="https://github.com/constantinrazvan/Timematt" target="_blank" rel="noopener"><i class="bi bi-github"></i> constantinrazvan/Timematt</a>
   </div>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<script>
+  // ---- Live hero timer (demo of the product's core feature) ----
+  (function(){
+    const clock=document.getElementById('clock');
+    const cs=document.getElementById('cs');
+    const rec=document.getElementById('recText');
+    const tracker=document.getElementById('tracker');
+    const bar=document.getElementById('todayBar');
+    let seconds=0, timer=null, base=161*60; // "2h 41m" already logged today
+
+    function fmt(s){
+      const h=String(Math.floor(s/3600)).padStart(2,'0');
+      const m=String(Math.floor((s%3600)/60)).padStart(2,'0');
+      const sec=String(s%60).padStart(2,'0');
+      clock.innerHTML=`${h}:${m}:<span class="cs" id="cs">${sec}</span>`;
+    }
+    function updateToday(){
+      const total=base+seconds;
+      const h=Math.floor(total/3600), m=Math.floor((total%3600)/60);
+      document.getElementById('todayVal').textContent=`${h}h ${String(m).padStart(2,'0')}m`;
+      bar.style.width=Math.min(100,(total/(8*3600))*100)+'%';
+    }
+    function tick(){seconds++;fmt(seconds);updateToday();}
+
+    document.getElementById('startBtn').onclick=()=>{
+      if(timer)return;
+      tracker.classList.add('live');rec.textContent='recording';
+      timer=setInterval(tick,1000);
+    };
+    document.getElementById('pauseBtn').onclick=()=>{
+      clearInterval(timer);timer=null;tracker.classList.remove('live');rec.textContent='paused';
+    };
+    document.getElementById('resetBtn').onclick=()=>{
+      clearInterval(timer);timer=null;seconds=0;tracker.classList.remove('live');
+      rec.textContent='idle';fmt(0);updateToday();
+    };
+    fmt(0);updateToday();
+  })();
+
+  // ---- Copy button ----
+  document.getElementById('copyBtn').onclick=function(){
+    const txt=document.getElementById('code').innerText;
+    navigator.clipboard.writeText(txt).then(()=>{
+      this.textContent='Copied';setTimeout(()=>this.textContent='Copy',1400);
+    });
+  };
+
+  // ---- Scroll reveal ----
+  const io=new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});
+  },{threshold:.12});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+</script>
 </body>
 </html>
