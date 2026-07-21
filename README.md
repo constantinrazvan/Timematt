@@ -8,6 +8,11 @@
   A self-hosted dashboard for freelancers to manage clients, projects, tasks, time tracking and invoicing-ready reports.
 </p>
 
+<p align="center">
+  <a href="https://constantinrazvan.github.io/Timematt/">Website</a> ·
+  <a href="LICENSE">MIT License</a>
+</p>
+
 ---
 
 ## What this project sets out to be

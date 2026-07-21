@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TimeMatt — Open-Source Dashboard for Freelancers</title>
+<meta name="description" content="TimeMatt is a self-hosted, open-source dashboard for freelancers: clients, projects, Kanban tasks, time tracking, reports and real authentication — built with ASP.NET Core." />
+<link rel="icon" href="assets/logo-icon.png" />
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --surface: #ffffff;
+    --surface-2: #f1f2f5;
+    --border: #e6e8ec;
+    --text: #1a1d23;
+    --text-muted: #6b7280;
+    --primary: #7a4c8b;
+    --primary-dark: #623c6f;
+    --radius: 14px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1115;
+      --surface: #171a21;
+      --surface-2: #1e222a;
+      --border: #2a2e38;
+      --text: #e8e9ed;
+      --text-muted: #9297a3;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  a { color: inherit; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+
+  header.nav {
+    position: sticky; top: 0; z-index: 20;
+    background: color-mix(in srgb, var(--bg) 85%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.05rem; text-decoration: none; }
+  .brand img { height: 30px; width: auto; }
+  .nav-links { display: flex; align-items: center; gap: 28px; font-size: 0.92rem; }
+  .nav-links a { text-decoration: none; color: var(--text-muted); }
+  .nav-links a:hover { color: var(--text); }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 18px; border-radius: 10px; font-weight: 600; font-size: 0.92rem;
+    text-decoration: none; border: 1px solid transparent; cursor: pointer;
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .btn-outline { border-color: var(--border); color: var(--text); }
+  .btn-outline:hover { background: var(--surface-2); }
+
+  .hero { padding: 96px 0 64px; text-align: center; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 14px; border-radius: 999px; border: 1px solid var(--border);
+    background: var(--surface); font-size: 0.8rem; color: var(--text-muted); margin-bottom: 24px;
+  }
+  .eyebrow .dot { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; display: inline-block; }
+  .hero h1 { font-size: clamp(2.1rem, 5vw, 3.4rem); font-weight: 800; margin: 0 0 18px; letter-spacing: -0.02em; }
+  .hero h1 span { color: var(--primary); }
+  .hero p.lead { max-width: 620px; margin: 0 auto 32px; color: var(--text-muted); font-size: 1.1rem; }
+  .hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 56px; }
+
+  /* Product mockup */
+  .mockup {
+    max-width: 980px; margin: 0 auto; border-radius: 18px; overflow: hidden;
+    border: 1px solid var(--border); background: var(--surface);
+    box-shadow: 0 30px 80px -30px rgba(0,0,0,0.35);
+  }
+  .mockup-bar { display: flex; align-items: center; gap: 6px; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+  .mockup-bar span { width: 10px; height: 10px; border-radius: 50%; background: var(--border); }
+  .mockup-body { display: flex; min-height: 340px; }
+  .mockup-sidebar { width: 190px; flex-shrink: 0; background: #14151a; padding: 18px 14px; display: none; }
+  @media (min-width: 700px) { .mockup-sidebar { display: block; } }
+  .mockup-sidebar .item { color: #b6b8c2; font-size: 0.78rem; padding: 8px 10px; border-radius: 8px; margin-bottom: 4px; }
+  .mockup-sidebar .item.active { background: var(--primary); color: #fff; }
+  .mockup-main { flex: 1; padding: 20px; text-align: left; }
+  .mockup-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 16px; }
+  .mockup-stat { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+  .mockup-stat .label { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em; }
+  .mockup-stat .value { font-size: 1.1rem; font-weight: 700; }
+  .mockup-chart { border: 1px solid var(--border); border-radius: 10px; padding: 14px; height: 120px; display: flex; align-items: flex-end; gap: 8px; }
+  .mockup-chart i { flex: 1; background: linear-gradient(180deg, var(--primary), color-mix(in srgb, var(--primary) 40%, transparent)); border-radius: 4px 4px 0 0; }
+
+  section { padding: 72px 0; }
+  .section-head { text-align: center; max-width: 640px; margin: 0 auto 44px; }
+  .section-head .kicker { color: var(--primary); font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  .section-head h2 { font-size: clamp(1.6rem, 3vw, 2.2rem); margin: 8px 0 10px; letter-spacing: -0.01em; }
+  .section-head p { color: var(--text-muted); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+  .card {
+    border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface);
+    padding: 22px; text-align: left;
+  }
+  .card .icon {
+    width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    background: color-mix(in srgb, var(--primary) 14%, transparent); color: var(--primary); margin-bottom: 14px;
+    font-size: 1.05rem; font-weight: 700;
+  }
+  .card h3 { font-size: 1rem; margin: 0 0 6px; }
+  .card p { color: var(--text-muted); font-size: 0.9rem; margin: 0; }
+
+  .stack-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+  .pill {
+    border: 1px solid var(--border); background: var(--surface); border-radius: 999px;
+    padding: 8px 16px; font-size: 0.85rem; color: var(--text-muted);
+  }
+
+  .cta {
+    text-align: center; border: 1px solid var(--border); border-radius: 20px;
+    background: var(--surface); padding: 56px 32px;
+  }
+  .cta h2 { margin: 0 0 10px; font-size: 1.7rem; }
+  .cta p { color: var(--text-muted); margin: 0 0 24px; }
+
+  pre {
+    background: #14151a; color: #e8e9ed; border-radius: 12px; padding: 18px 20px;
+    overflow-x: auto; font-size: 0.85rem; text-align: left;
+  }
+  pre .muted { color: #9297a3; }
+
+  footer { border-top: 1px solid var(--border); padding: 32px 0; text-align: center; color: var(--text-muted); font-size: 0.85rem; }
+  footer a { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-row">
+    <a class="brand" href="#top">
+      <img src="assets/logo-icon.png" alt="TimeMatt" />
+      TimeMatt
+    </a>
+    <nav class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#stack">Tech Stack</a>
+      <a href="#start">Get Started</a>
+      <a href="https://github.com/constantinrazvan/Timematt" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero wrap">
+    <div class="eyebrow"><span class="dot"></span> Open source &middot; MIT licensed &middot; self-hosted</div>
+    <h1>The freelance dashboard<br /><span>you actually own.</span></h1>
+    <p class="lead">Clients, projects, Kanban tasks, time tracking and reports in one self-hosted app. No subscription, no vendor lock-in — clone it, run it, make it yours.</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="https://github.com/constantinrazvan/Timematt" target="_blank" rel="noopener">View on GitHub</a>
+      <a class="btn btn-outline" href="#start">Get Started</a>
+    </div>
+
+    <div class="mockup">
+      <div class="mockup-bar"><span></span><span></span><span></span></div>
+      <div class="mockup-body">
+        <div class="mockup-sidebar">
+          <div class="item active">Dashboard</div>
+          <div class="item">Clients</div>
+          <div class="item">Projects</div>
+          <div class="item">Tasks</div>
+          <div class="item">Time Tracking</div>
+          <div class="item">Reports</div>
+          <div class="item">Accounts</div>
+          <div class="item">Settings</div>
+        </div>
+        <div class="mockup-main">
+          <div class="mockup-stats">
+            <div class="mockup-stat"><div class="label">Active Projects</div><div class="value">6</div></div>
+            <div class="mockup-stat"><div class="label">Clients</div><div class="value">12</div></div>
+            <div class="mockup-stat"><div class="label">Revenue</div><div class="value">$18.4k</div></div>
+            <div class="mockup-stat"><div class="label">Pending Tasks</div><div class="value">9</div></div>
+          </div>
+          <div class="mockup-chart">
+            <i style="height:35%"></i><i style="height:55%"></i><i style="height:40%"></i>
+            <i style="height:70%"></i><i style="height:50%"></i><i style="height:85%"></i><i style="height:60%"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="features" class="wrap">
+    <div class="section-head">
+      <div class="kicker">Features</div>
+      <h2>Everything a freelancer's workflow needs</h2>
+      <p>One workspace instead of five different SaaS tabs.</p>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <div class="icon">C</div>
+        <h3>Clients</h3>
+        <p>A CRM-style list of clients with per-client revenue, hours and project history.</p>
+      </div>
+      <div class="card">
+        <div class="icon">P</div>
+        <h3>Projects</h3>
+        <p>Track status, fixed-price or hourly billing, files and comments per project.</p>
+      </div>
+      <div class="card">
+        <div class="icon">T</div>
+        <h3>Tasks</h3>
+        <p>A drag-and-drop Kanban board, plus list and grid views, with a detail page per task.</p>
+      </div>
+      <div class="card">
+        <div class="icon">⏱</div>
+        <h3>Time Tracking</h3>
+        <p>Start, pause and stop a timer against a specific project and task, with daily/weekly/monthly summaries.</p>
+      </div>
+      <div class="card">
+        <div class="icon">R</div>
+        <h3>Reports</h3>
+        <p>Hours and revenue charts, with one-click PDF and CSV export of the whole workspace.</p>
+      </div>
+      <div class="card">
+        <div class="icon">A</div>
+        <h3>Real Auth</h3>
+        <p>ASP.NET Core Identity with roles, forgot/reset password, and a client invite flow delivered by email.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="stack" class="wrap">
+    <div class="section-head">
+      <div class="kicker">Tech Stack</div>
+      <h2>Built on a boring, reliable stack</h2>
+      <p>No exotic dependencies — just ASP.NET Core, Razor and a real database.</p>
+    </div>
+    <div class="stack-row">
+      <span class="pill">ASP.NET Core MVC (.NET 10)</span>
+      <span class="pill">Razor Views</span>
+      <span class="pill">Bootstrap 5</span>
+      <span class="pill">Entity Framework Core 9</span>
+      <span class="pill">MySQL / MariaDB</span>
+      <span class="pill">ASP.NET Core Identity</span>
+      <span class="pill">Chart.js</span>
+      <span class="pill">SortableJS</span>
+    </div>
+  </section>
+
+  <section id="start" class="wrap">
+    <div class="cta">
+      <h2>Self-host it in a few minutes</h2>
+      <p>Clone the repo, point it at your own MySQL database, and run it.</p>
+      <pre><span class="muted"># clone</span>
+git clone https://github.com/constantinrazvan/Timematt.git
+cd Timematt/TimeMatt
+
+<span class="muted"># configure your database in appsettings.json, then</span>
+dotnet ef database update
+dotnet run</pre>
+      <div class="hero-actions" style="margin-top: 24px;">
+        <a class="btn btn-primary" href="https://github.com/constantinrazvan/Timematt" target="_blank" rel="noopener">Get the code</a>
+        <a class="btn btn-outline" href="https://github.com/constantinrazvan/Timematt/blob/main/README.md" target="_blank" rel="noopener">Read the docs</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    TimeMatt is free and open source under the MIT license &middot;
+    <a href="https://github.com/constantinrazvan/Timematt" target="_blank" rel="noopener">Star it on GitHub</a>
+  </div>
+</footer>
+
+</body>
+</html>
