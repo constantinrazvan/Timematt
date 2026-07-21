@@ -22,7 +22,7 @@
         <div class="d-flex align-items-center gap-2 mb-1">
             <h1 class="h3 fw-bold mb-0">@Model.Title</h1>
             <span class="fh-badge fh-badge-no-dot @Model.Priority.CssClass()"><i class="bi @PriorityIcon(Model.Priority)" style="font-size: 0.65rem;"></i> @Model.Priority</span>
-            <span class="fh-badge fh-badge-review">@Model.Column.ColumnLabel()</span>
+            <span class="fh-badge fh-badge-no-dot fh-badge-review">@Model.Column.ColumnLabel()</span>
         </div>
         <p class="text-muted-fh mb-0">
             <a asp-controller="Projects" asp-action="Details" asp-route-id="@Model.ProjectId" class="text-decoration-none text-reset">@Model.ProjectName</a>

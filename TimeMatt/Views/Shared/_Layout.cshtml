@@ -57,13 +57,21 @@
                     <i class="bi bi-gear-fill"></i> Settings
                 </a>
             </nav>
+            @{
+                var displayName = User.FindFirst("FullName")?.Value;
+                if (string.IsNullOrWhiteSpace(displayName))
+                {
+                    displayName = "Alex Morgan";
+                }
+                var initials = string.Concat(displayName.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(p => char.ToUpperInvariant(p[0]))).PadRight(2)[..2];
+            }
             <div class="fh-sidebar-footer d-flex align-items-center gap-2">
-                <span class="fh-avatar fh-avatar-sm">AM</span>
-                <div class="flex-grow-1">
-                    <div class="text-white fw-semibold" style="font-size: 0.8rem;">@(User.Identity?.Name ?? "Alex Morgan")</div>
+                <span class="fh-avatar fh-avatar-sm flex-shrink-0">@initials</span>
+                <div class="flex-grow-1 text-truncate" style="min-width: 0;">
+                    <div class="text-white fw-semibold text-truncate" style="font-size: 0.8rem;" title="@displayName">@displayName</div>
                     <div style="font-size: 0.72rem;">Freelancer</div>
                 </div>
-                <form asp-controller="Auth" asp-action="Logout" method="post">
+                <form asp-controller="Auth" asp-action="Logout" method="post" class="flex-shrink-0">
                     <button type="submit" class="fh-icon-btn" title="Log out" style="width: 32px; height: 32px;">
                         <i class="bi bi-box-arrow-right"></i>
                     </button>

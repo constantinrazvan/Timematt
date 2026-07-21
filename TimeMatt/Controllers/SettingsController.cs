@@ -21,7 +21,7 @@ public class SettingsController : Controller
     {
         var vm = new SettingsViewModel
         {
-            Name = User.FindFirstValue(ClaimTypes.Name) ?? "Alex Morgan",
+            Name = User.FindFirstValue("FullName") ?? "Alex Morgan",
             Email = User.FindFirstValue(ClaimTypes.Email) ?? "alex.morgan@textmatt.dev"
         };
 
